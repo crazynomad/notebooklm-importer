@@ -12,6 +12,23 @@
 | 批量导入 | 多个 URL 或所有浏览器标签页批量导入 |
 | 播放列表导入 | YouTube 播放列表批量导入 |
 | RSS 导入 | RSS 源文章批量导入 |
+| 文档站点导入 | 自动分析文档站点结构，批量导入所有页面 |
+
+### 文档站点导入
+
+支持自动检测并提取以下框架的文档站点：
+
+- **Docusaurus** - Meta 开源的文档框架
+- **MkDocs / Material for MkDocs** - Python 文档生成器
+- **VitePress** - Vue 驱动的静态站点生成器
+- **GitBook** - 现代文档平台
+- **ReadTheDocs / Sphinx** - Python 生态文档托管
+
+使用方法：
+1. 打开文档站点首页（确保侧边栏可见）
+2. 点击扩展，切换到「文档站点」标签
+3. 点击「分析当前站点」
+4. 选择要导入的页面，批量导入到 NotebookLM
 
 ## 技术栈
 
@@ -66,6 +83,7 @@ notebooklm-importer/
 ├── entrypoints/
 │   ├── background.ts          # Service Worker
 │   ├── notebooklm.content.ts  # NotebookLM 页面自动化
+│   ├── docs.content.ts        # 文档站点分析 (动态注入)
 │   └── popup/                 # Popup UI
 │       ├── index.html
 │       ├── main.tsx
@@ -75,11 +93,14 @@ notebooklm-importer/
 │   ├── SingleImport.tsx
 │   ├── BatchImport.tsx
 │   ├── PlaylistImport.tsx
-│   └── RssImport.tsx
+│   ├── RssImport.tsx
+│   └── DocsImport.tsx         # 文档站点导入
 ├── services/                  # 业务逻辑
 │   ├── youtube-api.ts         # 订阅验证、播放列表
 │   ├── rss-parser.ts          # RSS 解析
-│   └── notebooklm.ts          # 自动化操作
+│   ├── notebooklm.ts          # 自动化操作
+│   ├── docs-analyzer.ts       # 文档框架检测与页面提取
+│   └── docs-site.ts           # 文档站点分析服务
 ├── lib/
 │   ├── config.ts              # 配置常量
 │   ├── types.ts               # TypeScript 类型
