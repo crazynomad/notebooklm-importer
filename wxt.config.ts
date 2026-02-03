@@ -20,6 +20,7 @@ export default defineConfig({
       'activeTab',
       'tabs',
       'identity',
+      'scripting',
     ],
     host_permissions: [
       'https://notebooklm.google.com/*',
