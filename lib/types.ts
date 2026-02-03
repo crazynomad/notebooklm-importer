@@ -14,6 +14,7 @@ export type DocFramework =
   | 'readthedocs'
   | 'sphinx'
   | 'mintlify'
+  | 'anthropic'
   | 'unknown';
 
 // Document page item

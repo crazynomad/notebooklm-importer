@@ -16,6 +16,7 @@ const FRAMEWORK_LABELS: Record<DocFramework, string> = {
   readthedocs: 'ReadTheDocs / Sphinx',
   sphinx: 'Sphinx',
   mintlify: 'Mintlify',
+  anthropic: 'Anthropic Docs',
   unknown: '未识别框架',
 };
 

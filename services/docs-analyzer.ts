@@ -48,6 +48,13 @@ export function detectFramework(doc: Document): DocFramework {
     return 'mintlify';
   }
 
+  // Anthropic Claude Platform docs detection
+  const anthropicTheme = doc.querySelector('html[data-theme="claude"]');
+  const anthropicDocs = doc.querySelector('a[href*="/docs/en/"]');
+  if (anthropicTheme || (anthropicDocs && doc.location?.hostname?.includes('claude.com'))) {
+    return 'anthropic';
+  }
+
   return 'unknown';
 }
 
@@ -70,6 +77,8 @@ export function extractPages(
       return extractReadTheDocsPages(doc, baseUrl);
     case 'mintlify':
       return extractMintlifyPages(doc, baseUrl);
+    case 'anthropic':
+      return extractAnthropicPages(doc, baseUrl);
     default:
       return extractGenericPages(doc, baseUrl);
   }
@@ -381,6 +390,69 @@ function extractMintlifyPages(doc: Document, baseUrl: string): DocPageItem[] {
     links.forEach((link) => {
       const href = link.getAttribute('href');
       if (!href || href.startsWith('#') || href.includes('mintlify')) return;
+
+      const url = resolveUrl(href, baseUrl);
+      if (!isSameSite(url, baseUrl)) return;
+
+      pages.push({
+        url,
+        title: link.textContent?.trim() || url,
+        path: new URL(url).pathname,
+        level: 0,
+      });
+    });
+  }
+
+  return deduplicatePages(pages);
+}
+
+// Extract Anthropic Claude Platform docs links
+function extractAnthropicPages(doc: Document, baseUrl: string): DocPageItem[] {
+  const pages: DocPageItem[] = [];
+
+  // Anthropic docs uses aside with links to /docs/
+  const aside = doc.querySelector('aside');
+  if (aside) {
+    // Find section headers (font-semibold divs)
+    const sections = aside.querySelectorAll('div.font-semibold');
+    let currentSection = '';
+
+    // Get all links in the aside
+    const links = aside.querySelectorAll<HTMLAnchorElement>('a[href*="/docs/"]');
+    links.forEach((link) => {
+      const href = link.getAttribute('href');
+      if (!href || href.startsWith('#')) return;
+
+      const url = resolveUrl(href, baseUrl);
+      if (!isSameSite(url, baseUrl)) return;
+
+      // Try to find section header before this link
+      let prevSibling = link.parentElement;
+      while (prevSibling) {
+        const header = prevSibling.querySelector('.font-semibold');
+        if (header && header.textContent) {
+          currentSection = header.textContent.trim();
+          break;
+        }
+        prevSibling = prevSibling.previousElementSibling as HTMLElement;
+      }
+
+      pages.push({
+        url,
+        title: link.textContent?.trim() || url,
+        path: new URL(url).pathname,
+        level: 0,
+        section: currentSection || undefined,
+      });
+    });
+  }
+
+  // Fallback: get all /docs/ links from the page
+  if (pages.length === 0) {
+    const links = doc.querySelectorAll<HTMLAnchorElement>('a[href*="/docs/"]');
+    links.forEach((link) => {
+      const href = link.getAttribute('href');
+      if (!href || href.startsWith('#')) return;
 
       const url = resolveUrl(href, baseUrl);
       if (!isSameSite(url, baseUrl)) return;
