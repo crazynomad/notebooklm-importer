@@ -1,48 +1,101 @@
-# NotebookLM Jetpack 🚀
+<p align="center">
+  <img src="assets/icons/concepts/concept8-final.svg" width="128" height="128" alt="NotebookLM Jetpack Logo">
+</p>
 
-给 NotebookLM 装上喷射背包 — 一键导入网页、Substack、播客、文档站、AI 对话，聚合多篇突破来源限制。
+<h1 align="center">NotebookLM Jetpack 🚀</h1>
 
-📖 **文档站**：[jetpack.boing.work](https://jetpack.boing.work/)
-🔒 **隐私政策**：[Privacy Policy](https://jetpack.boing.work/privacy)
+<p align="center">
+  <strong>Supercharge NotebookLM — Import web pages, Substack, podcasts, doc sites & AI chats in one click.</strong><br>
+  Merge articles into one source to break the 50-slot limit.
+</p>
 
-**完全免费 · 无需登录 · 纯客户端运行 · 开源**
+<p align="center">
+  <a href="https://jetpack.boing.work/">📖 Docs</a> •
+  <a href="https://www.youtube.com/watch?v=9gPTuJZRHJk">🎬 Demo Video</a> •
+  <a href="https://jetpack.boing.work/privacy">🔒 Privacy Policy</a> •
+  <a href="https://github.com/crazynomad/notebooklm-jetpack/releases/latest">📦 Download</a>
+</p>
 
-## 功能
+<p align="center">
+  <strong>100% Free · No Login Required · Runs Locally · Open Source</strong>
+</p>
 
-| 功能 | 描述 |
-|------|------|
-| 🌐 网页导入 | 单个导入、批量导入、导入所有标签页 |
-| 📑 收藏夹 & 聚合 | 内置「稍后阅读」，多篇聚合为一个 PDF，突破 50 来源限制 |
-| 📚 文档站导入 | 自动识别 14+ 文档框架，批量导入或导出 PDF |
-| 🎙️ 播客导入 | Apple Podcasts、小宇宙，下载音频拖入 NotebookLM |
-| 🤖 AI 对话导入 | Claude、ChatGPT、Gemini 对话提取，按问答对选择导入 |
-| 📡 RSS 导入 | RSS/Atom 源文章批量导入 |
-| 🛟 失败抢救 | 自动检测导入失败和假性成功的来源，一键批量修复 |
-| 🖱️ 右键菜单 | 浏览任意网页时右键直接导入 |
-| 📋 导入历史 | 最近 100 条导入记录 |
-| 🌐 双语界面 | 中英文自动适配，可手动切换 |
+---
 
-### 特殊平台支持
+## 🎬 Demo
 
-- **Substack** — 精准提取正文，14 种噪音过滤（Subscribe 按钮、评论区等）
-- **微信公众号** — 浏览器内渲染后提取，绕过反爬机制
-- **X.com (Twitter) 长文** — 自动识别 Article 格式，浏览器渲染提取
+[![NotebookLM Jetpack Demo](https://img.youtube.com/vi/9gPTuJZRHJk/maxresdefault.jpg)](https://www.youtube.com/watch?v=9gPTuJZRHJk)
 
-### 文档站框架
+---
 
-支持自动检测并提取以下框架：
+## ✨ Features
 
-Docusaurus · VitePress · MkDocs · GitBook · Mintlify · Sphinx · ReadTheDocs · Google DevSite · Anthropic Docs · 语雀 · 微信开发文档 · 鸿蒙文档
+### 🔌 Smart Import — Fix links that won't import
 
-以及任何提供 `sitemap.xml` 或 `llms.txt` 的站点。
+NotebookLM's URL import silently fails on many popular sources. Jetpack handles them all:
 
-## 安装
+- **Substack** — Precision extraction with 14 noise filters (subscribe buttons, comments, etc.)
+- **WeChat Articles** — Renders full page in-browser, bypassing anti-scraping
+- **X.com (Twitter) Articles** — Auto-detects long-form article format, full extraction
+- **Dynamic/SPA pages** — JS-rendered pages that NotebookLM can't fetch? Handled
+
+### 📦 Break the 50-Source Limit
+
+Jetpack's built-in **read-later list** lets you collect articles, then merge 10–20 into a single PDF. One PDF = one source slot = 20 articles of knowledge.
+
+<img src="docs/screenshots/1280x800/01-bookmarks.png" width="640" alt="Bookmarks & Merge">
+
+### 📚 Batch Import Entire Doc Sites
+
+Open any doc page → **Analyze Site** → auto-detects the framework → select chapters → batch import or export as PDF.
+
+Supports **14+ frameworks**: Docusaurus · VitePress · MkDocs · GitBook · Mintlify · Sphinx · ReadTheDocs · Google DevSite · Anthropic Docs · 语雀 · WeChat Docs · HarmonyOS Docs — plus any site with `sitemap.xml` or `llms.txt`.
+
+<img src="docs/screenshots/1280x800/02-docs.png" width="640" alt="Doc Site Import">
+
+### 🤖 AI Conversation Import
+
+Open the extension on any **Claude, ChatGPT, or Gemini** conversation page. Auto-extracts Q&A pairs, selectively import into NotebookLM as structured content.
+
+<img src="docs/screenshots/1280x800/03-ai-chat.png" width="640" alt="AI Chat Import">
+
+### 🛟 Smart Failure Detection & Rescue
+
+Auto-scans all sources in your notebook, flags failures and silently broken imports, then **rescues them all in one click**.
+
+<img src="docs/screenshots/1280x800/04-rescue.png" width="640" alt="Smart Rescue">
+
+### 🎙️ Podcast Import
+
+Paste an Apple Podcasts or 小宇宙 link → pick episodes → download audio → drag into NotebookLM.
+
+<img src="docs/screenshots/1280x800/05-podcast.png" width="640" alt="Podcast Import">
+
+### ⚡ And More
+
+| Feature | Description |
+|---------|-------------|
+| 📡 RSS Import | Substack, Medium, any standard RSS/Atom feed |
+| 🖱️ Right-click Menu | Import any page instantly from context menu |
+| 📋 Import History | Last 100 entries, always accessible |
+| 🌐 Bilingual UI | Chinese & English, auto-detects browser language |
+
+---
+
+## 📥 Install
 
 ### Chrome Web Store
 
-*审核中，即将上线。*
+*Under review — coming soon.*
 
-### 从源码安装
+### From GitHub Release
+
+1. Download the latest `.zip` from [Releases](https://github.com/crazynomad/notebooklm-jetpack/releases/latest)
+2. Open Chrome → `chrome://extensions/`
+3. Enable **Developer mode** (top right)
+4. Drag the `.zip` file into the page, or unzip and click **Load unpacked**
+
+### From Source
 
 ```bash
 git clone https://github.com/crazynomad/notebooklm-jetpack.git
@@ -51,42 +104,47 @@ pnpm install
 pnpm build
 ```
 
-1. 打开 Chrome → `chrome://extensions/`
-2. 开启「开发者模式」
-3. 点击「加载已解压的扩展程序」
-4. 选择 `dist/chrome-mv3` 目录
+Then load `dist/chrome-mv3` as an unpacked extension.
 
-## 开发
+---
+
+## 🛠️ Development
 
 ```bash
-pnpm dev        # 开发模式（热更新，端口 3003）
-pnpm build      # 生产构建
-pnpm test       # 运行测试
-pnpm compile    # TypeScript 类型检查
-pnpm lint       # 代码检查
+pnpm dev        # Dev mode (HMR, port 3003)
+pnpm build      # Production build
+pnpm test       # Run tests
+pnpm compile    # TypeScript type check
+pnpm lint       # Code lint
 ```
 
-## 技术栈
+## 🏗️ Tech Stack
 
-- [WXT](https://wxt.dev/) — Chrome Extension 框架 (Manifest V3)
+- [WXT](https://wxt.dev/) — Chrome Extension framework (Manifest V3)
 - [React 18](https://react.dev/) — UI
-- [TypeScript](https://www.typescriptlang.org/) — 类型安全
-- [Tailwind CSS](https://tailwindcss.com/) — 样式
-- [Vitest](https://vitest.dev/) — 测试
+- [TypeScript](https://www.typescriptlang.org/) — Type safety
+- [Tailwind CSS](https://tailwindcss.com/) — Styling
+- [Vitest](https://vitest.dev/) — Testing
 
-## 隐私
+---
 
-- 无需登录，不收集任何用户数据
-- 所有操作在浏览器本地完成，不上传到第三方服务器
-- 开源代码可审计
-- 符合 Chrome Manifest V3 安全规范
+## 🔒 Privacy
 
-详见 [隐私政策](https://jetpack.boing.work/privacy)。
+- No login required, no user data collected
+- Runs entirely in your browser — zero data sent to third-party servers
+- Open source & auditable
+- Chrome Manifest V3 compliant
 
-## License
+See [Privacy Policy](https://jetpack.boing.work/privacy).
+
+---
+
+## 📄 License
 
 MIT
 
 ---
 
-*Made by 绿皮火车 🚂*
+<p align="center">
+  <em>Made by <a href="https://www.youtube.com/@greentrainpodcast">绿皮火车 🚂</a></em>
+</p>
