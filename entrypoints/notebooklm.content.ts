@@ -476,32 +476,37 @@ async function removeSingleSource(container: HTMLElement): Promise<void> {
   (menuBtn as HTMLElement).click();
   await delay(500);
 
-  const menuItems = document.querySelectorAll('[role="menuitem"], .mat-mdc-menu-item');
-  let found = false;
-  for (const item of menuItems) {
-    const text = item.textContent?.trim() || '';
-    if (text.includes('移除来源') || text.includes('Remove source') || text.includes('Delete source')) {
-      (item as HTMLElement).click();
-      await delay(800);
+  // Stable class first, then text fallback
+  const deleteItem = document.querySelector<HTMLElement>('.more-menu-delete-source-button')
+    || Array.from(document.querySelectorAll<HTMLElement>('[role="menuitem"], .mat-mdc-menu-item'))
+      .find(item => {
+        const text = item.textContent?.trim() || '';
+        return text.includes('移除来源') || text.includes('Remove source') || text.includes('Delete source');
+      });
 
-      const confirmBtns = document.querySelectorAll('button');
-      for (const btn of confirmBtns) {
-        const btnText = btn.textContent?.trim() || '';
-        if (btnText === 'Delete' || btnText === '删除' || btnText === '移除') {
-          btn.click();
-          await delay(1000);
-          found = true;
-          break;
-        }
-      }
-      break;
-    }
-  }
-
-  if (!found) {
+  if (!deleteItem) {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     throw new Error('Delete menu item not found');
   }
+
+  deleteItem.click();
+  await delay(800);
+
+  // Confirm deletion — stable class first, then text fallback
+  const confirmBtn = document.querySelector<HTMLElement>('mat-dialog-container .submit-button')
+    || Array.from(document.querySelectorAll<HTMLElement>('button'))
+      .find(btn => {
+        const btnText = btn.textContent?.trim() || '';
+        return btnText === 'Delete' || btnText === '删除' || btnText === '移除';
+      });
+
+  if (!confirmBtn) {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    throw new Error('Delete confirm button not found');
+  }
+
+  confirmBtn.click();
+  await delay(1000);
 }
 
 function exitSelectionMode(): void {
@@ -522,15 +527,18 @@ async function importUrlToNotebookLM(url: string): Promise<boolean> {
     await openAddSourceDialog();
 
     // Step 2: Check if we're already on the URL input step (dialog may already be at website sub-page)
-    let urlTextarea = await findTextareaByPlaceholder(
-      ['粘贴任何链接', '粘贴', 'Paste any link', 'Paste any links', 'Paste'],
-      500
-    );
+    let urlTextarea = findDialogElement<HTMLTextAreaElement>('.urls-input-container textarea')
+      || await findTextareaByPlaceholder(
+        ['粘贴任何链接', '粘贴', 'Paste any link', 'Paste any links', 'Paste'],
+        500
+      );
 
     if (!urlTextarea) {
-      // Not at URL input step yet — click "网站" (Website) button
-      // Icon-first: the Websites button has "link" icon; fallback to text
-      const websiteButton = await findDialogButtonByIcon(['link'], 500)
+      // Not at URL input step yet — click "Websites" button
+      // Stable class + icon-first (language-independent); fallback to text
+      const websiteButton = findDialogElement<HTMLElement>('.drop-zone-icon-button', el =>
+          !!el.querySelector('img')?.textContent?.trim()?.includes('link'))
+        || await findDialogButtonByIcon(['link'], 500)
         || await findButtonByText(['网站', 'Website', 'Websites', 'Link'], 3000);
       if (!websiteButton) {
         throw new Error('Website button not found in dialog');
@@ -538,11 +546,12 @@ async function importUrlToNotebookLM(url: string): Promise<boolean> {
       websiteButton.click();
       await delay(500);
 
-      // Now find the URL textarea
-      urlTextarea = await findTextareaByPlaceholder(
-        ['粘贴任何链接', '粘贴', 'Paste any link', 'Paste any links', 'Paste'],
-        3000
-      );
+      // Now find the URL textarea — stable class first, then placeholder fallback
+      urlTextarea = findDialogElement<HTMLTextAreaElement>('.urls-input-container textarea')
+        || await findTextareaByPlaceholder(
+          ['粘贴任何链接', '粘贴', 'Paste any link', 'Paste any links', 'Paste'],
+          3000
+        );
     }
     if (!urlTextarea) {
       throw new Error('URL input textarea not found');
@@ -573,25 +582,27 @@ async function importTextToNotebookLM(text: string, title?: string): Promise<boo
     // Step 1: Open the add source dialog
     await openAddSourceDialog();
 
-    // Step 2: Check if already on "粘贴复制的文字" sub-page (textarea visible)
-    let textArea = await findTextareaByPlaceholder(
-      ['在此处粘贴文字', '粘贴文字', '粘贴', 'Paste text here', 'Paste'],
-      500
-    );
+    // Step 2: Check if already on "Copied text" sub-page (textarea visible)
+    let textArea = findDialogElement<HTMLTextAreaElement>('.copied-text-input-textarea')
+      || await findTextareaByPlaceholder(
+        ['在此处粘贴文字', '粘贴文字', '粘贴', 'Paste text here', 'Paste'],
+        500
+      );
 
     if (!textArea) {
       // Need to navigate to copied text sub-page first
       // First go back to main dialog if on another sub-page (e.g. URL input)
-      const backButton = await findDialogButtonByIcon(['arrow_back'], 200)
-        || await findButtonByText(['返回', 'Back'], 300);
+      const backButton = findDialogElement<HTMLElement>('.back-button')
+        || await findDialogButtonByIcon(['arrow_back'], 200);
       if (backButton) {
         backButton.click();
         await delay(500);
       }
 
-      // Click "复制的文字" (Copied text) button
-      // Icon-first: the Copied text button has "content_paste" icon; fallback to text
-      const textButton = await findDialogButtonByIcon(['content_paste'], 500)
+      // Click "Copied text" button — stable class + icon (language-independent)
+      const textButton = findDialogElement<HTMLElement>('.drop-zone-icon-button', el =>
+          !!el.querySelector('img')?.textContent?.trim()?.includes('content_paste'))
+        || await findDialogButtonByIcon(['content_paste'], 500)
         || await findButtonByText(['复制的文字', '复制的文本', 'Copied text', 'Text'], 3000);
       if (!textButton) {
         throw new Error('Copied text button not found in dialog');
@@ -599,11 +610,12 @@ async function importTextToNotebookLM(text: string, title?: string): Promise<boo
       textButton.click();
       await delay(500);
 
-      // Now find the textarea
-      textArea = await findTextareaByPlaceholder(
-        ['在此处粘贴文字', '粘贴文字', '粘贴', 'Paste text here', 'Paste'],
-        3000
-      );
+      // Now find the textarea — stable class first
+      textArea = findDialogElement<HTMLTextAreaElement>('.copied-text-input-textarea')
+        || await findTextareaByPlaceholder(
+          ['在此处粘贴文字', '粘贴文字', '粘贴', 'Paste text here', 'Paste'],
+          3000
+        );
     }
 
     if (!textArea) {
@@ -615,11 +627,11 @@ async function importTextToNotebookLM(text: string, title?: string): Promise<boo
       textArea = dialogTextareas[dialogTextareas.length - 1];
     }
 
-    // Step 3: Fill title if available
+    // Step 3: Fill title if available (note: newer UI removed inline title input)
     if (title) {
       const titleInput = await findInputByPlaceholder(
         ['来源名称', '标题', 'Source name', 'Title', 'title'],
-        2000
+        500
       );
       if (titleInput) {
         await fillInput(titleInput, title);
@@ -663,6 +675,8 @@ async function importTextToNotebookLM(text: string, title?: string): Promise<boo
             await renameSource(sourceTitle, title);
           } catch (e) {
             console.warn('[importText] Rename failed (non-fatal):', e);
+            // Ensure any leftover dialog is dismissed
+            dismissAnyDialog();
           }
         }
       }
@@ -682,13 +696,56 @@ function getMainDialog(): Element | null {
   return document.querySelector('mat-dialog-container') || document.querySelector('.mat-mdc-dialog-container');
 }
 
+/** Check if the currently open dialog is the Add Source dialog (not Studio/Rename/etc.) */
+function isAddSourceDialog(dialog: Element): boolean {
+  // Add Source main page has .drop-zone-container; sub-pages have .urls-input-container / .copied-text-container
+  return !!(
+    dialog.querySelector('.drop-zone-container')
+    || dialog.querySelector('.urls-input-container')
+    || dialog.querySelector('.copied-text-container')
+  );
+}
+
+/**
+ * Find an element inside the current dialog by CSS selector.
+ * Optionally filter with a predicate (e.g. to match by icon).
+ * Returns null if dialog is closed or element not found.
+ */
+function findDialogElement<T extends HTMLElement>(
+  selector: string,
+  predicate?: (el: T) => boolean,
+): T | null {
+  const dialog = getMainDialog();
+  if (!dialog) return null;
+  if (predicate) {
+    const candidates = dialog.querySelectorAll<T>(selector);
+    for (const el of candidates) {
+      if (predicate(el)) return el;
+    }
+    return null;
+  }
+  return dialog.querySelector<T>(selector);
+}
+
 async function openAddSourceDialog(): Promise<void> {
-  // Check if Material dialog is already open
-  if (getMainDialog()) {
-    return; // Dialog already open
+  const existingDialog = getMainDialog();
+
+  if (existingDialog) {
+    if (isAddSourceDialog(existingDialog)) {
+      return; // Add Source dialog already open
+    }
+    // A different dialog is open (Studio, Rename, etc.) — dismiss it first
+    const closeBtn = existingDialog.querySelector<HTMLElement>('.close-button, .dialog-title-close-icon, .cancel-button');
+    if (closeBtn) {
+      closeBtn.click();
+      await delay(500);
+    } else {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      await delay(500);
+    }
   }
 
-  // Find and click "添加来源" / "Add source" button
+  // Find and click "Add source" button
   const addButton = findAddSourceButton();
   if (!addButton) {
     throw new Error('Add source button not found');
@@ -704,7 +761,11 @@ async function openAddSourceDialog(): Promise<void> {
 }
 
 function findAddSourceButton(): HTMLElement | null {
-  // Strategy 1: aria-label (works for both EN and CN)
+  // Strategy 1: Stable class selector (language-independent)
+  const byClass = document.querySelector<HTMLElement>('.add-source-button');
+  if (byClass) return byClass;
+
+  // Strategy 2: aria-label
   const ariaSelectors = [
     'button[aria-label*="Add source"]',
     'button[aria-label*="添加来源"]',
@@ -714,7 +775,7 @@ function findAddSourceButton(): HTMLElement | null {
     if (el) return el;
   }
 
-  // Strategy 2: Find button with "add" icon in the source panel (language-independent)
+  // Strategy 3: Find button with "add" icon in the source panel
   const sourcePanel = document.querySelector('.source-panel, [class*="source"]');
   const searchRoot = sourcePanel || document;
   const buttons = searchRoot.querySelectorAll('button');
@@ -723,19 +784,10 @@ function findAddSourceButton(): HTMLElement | null {
     for (const icon of icons) {
       if (icon.textContent?.trim() === 'add') {
         const btnText = button.textContent?.trim() || '';
-        // Make sure it's the "Add source" button, not "Create notebook" etc.
         if (btnText.includes('source') || btnText.includes('来源') || btnText.includes('Add')) {
           return button;
         }
       }
-    }
-  }
-
-  // Strategy 3: Fallback to text content
-  for (const button of document.querySelectorAll('button')) {
-    const text = button.textContent?.trim() || '';
-    if (text.includes('添加来源') || text.includes('Add source')) {
-      return button;
     }
   }
 
@@ -900,6 +952,18 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/** Dismiss any open mat-dialog (rename, studio, etc.) to prevent leftover UI. */
+function dismissAnyDialog(): void {
+  const dialog = getMainDialog();
+  if (!dialog) return;
+  const closeBtn = dialog.querySelector<HTMLElement>('.close-button, .cancel-button, .dialog-title-close-icon');
+  if (closeBtn) {
+    closeBtn.click();
+  } else {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  }
+}
+
 /**
  * Find a button inside the current dialog by its Material icon text content.
  * Material icons render as <img> or <span> with text like "link", "content_paste", "upload".
@@ -971,7 +1035,8 @@ async function renameSource(oldName: string, newName: string): Promise<void> {
     const waitMs = 600 + attempt * 400; // 600, 1000, 1400, 1800, 2200, 2600
     await delay(waitMs);
 
-    renameItem = await findMenuItemByIconOrText(['edit', 'drive_file_rename_outline'], ['重命名来源', 'Rename source', 'Rename'], 3000);
+    renameItem = document.querySelector<HTMLElement>('.more-menu-edit-source-button')
+      || await findMenuItemByIconOrText(['edit', 'drive_file_rename_outline'], ['重命名来源', 'Rename source', 'Rename'], 3000);
     if (renameItem) break;
 
     // Menu didn't open — dismiss any stale overlay and retry
@@ -986,12 +1051,11 @@ async function renameSource(oldName: string, newName: string): Promise<void> {
   renameItem.click();
   await delay(800);
 
-  // Find the rename dialog input (label: "来源名称")
-  const renameInput = await findInputByPlaceholder(['来源名称', 'Source name'], 3000) 
+  // Find the rename dialog input — stable class first, then fallback
+  const renameInput = await waitForElement<HTMLInputElement>('.edit-source-dialog input', 3000)
     || await findInputByLabel(['来源名称', 'Source name'], 3000);
   if (!renameInput) {
-    // Try Escape to close dialog
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    dismissAnyDialog();
     throw new Error('Rename input not found');
   }
 
@@ -1000,14 +1064,22 @@ async function renameSource(oldName: string, newName: string): Promise<void> {
   await delay(100);
   await fillInput(renameInput, newName);
 
-  // Click "保存" (Save) button
-  const saveBtn = await findButtonByText(['保存', 'Save'], 3000);
+  // Click Save button — stable class first, then text fallback
+  const saveBtn = document.querySelector<HTMLElement>('mat-dialog-container .submit-button')
+    || await findButtonByText(['保存', 'Save'], 3000);
   if (!saveBtn) {
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    dismissAnyDialog();
     throw new Error('Save button not found');
   }
   saveBtn.click();
   await delay(500);
+
+  // Verify dialog closed; dismiss if still open (e.g. Angular didn't accept the change)
+  if (getMainDialog()?.querySelector('.edit-source-dialog')) {
+    console.warn('[rename] Dialog still open after Save — force closing');
+    dismissAnyDialog();
+    await delay(300);
+  }
 }
 
 /**
@@ -1069,8 +1141,9 @@ async function findInputByLabel(
     const matLabels = document.querySelectorAll('mat-label, label, .mat-mdc-floating-label');
     for (const lbl of matLabels) {
       const lblText = lbl.textContent?.trim()?.replace(/\*$/, '').trim() || '';
+      const lblLower = lblText.toLowerCase();
       for (const label of labels) {
-        if (lblText === label || lblText.includes(label)) {
+        if (lblLower === label.toLowerCase() || lblLower.includes(label.toLowerCase())) {
           // Find the input within the same form field
           const formField = lbl.closest('mat-form-field, .mat-mdc-form-field, .mat-form-field');
           if (formField) {
@@ -1383,23 +1456,25 @@ async function removeFailedSources(): Promise<void> {
   const errorContainers = document.querySelectorAll('.single-source-error-container');
   if (errorContainers.length === 0) return;
 
-  // Find the "更多" (more) button inside the first error container
+  // Find the "More" button inside the first error container
   const firstError = errorContainers[0];
-  const moreBtn = firstError.querySelector('button') as HTMLElement;
+  const moreBtn = (firstError.querySelector('.source-item-more-button') || firstError.querySelector('button')) as HTMLElement;
   if (!moreBtn) return;
 
   moreBtn.click();
   await delay(500);
 
-  // Find "移除所有失败的来源" menu item
-  const menuItems = document.querySelectorAll('[role="menuitem"], .mat-mdc-menu-item, button');
-  for (const item of menuItems) {
-    const text = item.textContent?.trim() || '';
-    if (text.includes('移除所有失败的来源') || text.includes('Remove all failed')) {
-      (item as HTMLElement).click();
-      await delay(500);
-      return;
-    }
+  // Stable class first, then text fallback
+  const removeAllItem = document.querySelector<HTMLElement>('[class*="more-menu-remove-all-fail"]')
+    || Array.from(document.querySelectorAll<HTMLElement>('[role="menuitem"], .mat-mdc-menu-item'))
+      .find(item => {
+        const text = item.textContent?.trim() || '';
+        return text.includes('移除所有失败的来源') || text.includes('Remove all failed');
+      });
+  if (removeAllItem) {
+    removeAllItem.click();
+    await delay(500);
+    return;
   }
 
   // Fallback: press Escape to close menu if we couldn't find the option
@@ -1632,31 +1707,33 @@ async function removeSourcesByUrl(urls: string[]): Promise<void> {
       const container = source.closest('.single-source-container');
       if (!container) continue;
 
-      // Click the "更多" menu button
-      const menuBtn = container.querySelector('button') as HTMLElement;
+      // Click the "More" menu button
+      const menuBtn = (container.querySelector('.source-item-more-button') || container.querySelector('button')) as HTMLElement;
       if (!menuBtn) continue;
       menuBtn.click();
       await delay(500);
 
-      // Find "移除来源" menu item
-      const menuItems = document.querySelectorAll('[role="menuitem"], .mat-mdc-menu-item');
-      for (const item of menuItems) {
-        const text = item.textContent?.trim() || '';
-        if (text.includes('移除来源') || text.includes('Remove source') || text.includes('Delete source')) {
-          (item as HTMLElement).click();
-          await delay(800);
+      // Stable class first, then text fallback
+      const deleteItem = document.querySelector<HTMLElement>('.more-menu-delete-source-button')
+        || Array.from(document.querySelectorAll<HTMLElement>('[role="menuitem"], .mat-mdc-menu-item'))
+          .find(item => {
+            const text = item.textContent?.trim() || '';
+            return text.includes('移除来源') || text.includes('Remove source') || text.includes('Delete source');
+          });
+      if (deleteItem) {
+        deleteItem.click();
+        await delay(800);
 
-          // NotebookLM shows a confirmation dialog — click "Delete" / "删除" to confirm
-          const confirmBtns = document.querySelectorAll('button');
-          for (const btn of confirmBtns) {
-            const btnText = btn.textContent?.trim() || '';
-            if (btnText === 'Delete' || btnText === '删除') {
-              btn.click();
-              await delay(1000);
-              break;
-            }
-          }
-          break;
+        // Confirm — stable class first, then text fallback
+        const confirmBtn = document.querySelector<HTMLElement>('mat-dialog-container .submit-button')
+          || Array.from(document.querySelectorAll<HTMLElement>('button'))
+            .find(btn => {
+              const btnText = btn.textContent?.trim() || '';
+              return btnText === 'Delete' || btnText === '删除';
+            });
+        if (confirmBtn) {
+          confirmBtn.click();
+          await delay(1000);
         }
       }
       break;
