@@ -5,6 +5,6 @@ import './style.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <App context="sidepanel" />
   </React.StrictMode>
 );

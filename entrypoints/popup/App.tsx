@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
-import { BookOpen, History, MessageCircle, Headphones, MoreHorizontal, Bookmark, PanelRight } from 'lucide-react';
+import { BookOpen, History, MessageCircle, Headphones, MoreHorizontal, Bookmark, PanelRight, Package } from 'lucide-react';
 import type { ImportProgress } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/lib/i18n';
@@ -12,12 +12,13 @@ import { MorePanel } from '@/components/MorePanel';
 import { BookmarkPanel } from '@/components/BookmarkPanel';
 import { HistoryPanel } from '@/components/HistoryPanel';
 import { RescueBanner } from '@/components/RescueBanner';
+import { CollectionPanel } from '@/components/CollectionPanel';
 
-export default function App() {
+export default function App({ context = 'popup' }: { context?: 'popup' | 'sidepanel' }) {
   const { t, locale, setLocale } = useI18n();
   const [importProgress, setImportProgress] = useState<ImportProgress | null>(null);
   const [showHistory, setShowHistory] = useState(false);
-  const [activeTab, setActiveTab] = useState('bookmark');
+  const [activeTab, setActiveTab] = useState('collection');
   const [initialPodcastUrl, setInitialPodcastUrl] = useState('');
   const [notebookLMTabId, setNotebookLMTabId] = useState<number | null>(null);
 
@@ -61,19 +62,21 @@ export default function App() {
           >
             {locale === 'zh' ? 'EN' : '中'}
           </button>
-          <button
-            onClick={async () => {
-              const currentWindow = await chrome.windows.getCurrent();
-              if (currentWindow.id != null) {
-                await chrome.sidePanel.open({ windowId: currentWindow.id });
-                window.close();
-              }
-            }}
-            className="p-1.5 text-gray-400 hover:text-notebooklm-blue hover:bg-notebooklm-light rounded-lg transition-all duration-150 btn-press"
-            title={t('app.openSidePanel')}
-          >
-            <PanelRight className="w-4 h-4" />
-          </button>
+          {context === 'popup' && (
+            <button
+              onClick={async () => {
+                const currentWindow = await chrome.windows.getCurrent();
+                if (currentWindow.id != null) {
+                  await chrome.sidePanel.open({ windowId: currentWindow.id });
+                  window.close();
+                }
+              }}
+              className="p-1.5 text-gray-400 hover:text-notebooklm-blue hover:bg-notebooklm-light rounded-lg transition-all duration-150 btn-press"
+              title={t('app.openSidePanel')}
+            >
+              <PanelRight className="w-4 h-4" />
+            </button>
+          )}
           <button
             onClick={() => setShowHistory(true)}
             className="p-1.5 text-gray-400 hover:text-notebooklm-blue hover:bg-notebooklm-light rounded-lg transition-all duration-150 btn-press"
@@ -117,6 +120,7 @@ export default function App() {
       <Tabs.Root value={activeTab} onValueChange={setActiveTab} className="flex flex-col">
         <Tabs.List className="flex glass border-b border-border px-2 gap-0.5">
           {[
+            { value: 'collection', icon: Package, label: t('app.tabCollection') },
             { value: 'bookmark', icon: Bookmark, label: t('app.tabBookmarks') },
             { value: 'docs', icon: BookOpen, label: t('app.tabDocs') },
             { value: 'podcast', icon: Headphones, label: t('app.tabPodcast') },
@@ -140,6 +144,10 @@ export default function App() {
             </Tabs.Trigger>
           ))}
         </Tabs.List>
+
+        <Tabs.Content value="collection" className="p-4 animate-fade-in">
+          <CollectionPanel onProgress={setImportProgress} />
+        </Tabs.Content>
 
         <Tabs.Content value="docs" className="p-4 animate-fade-in">
           <DocsImport onProgress={setImportProgress} />

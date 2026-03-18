@@ -84,7 +84,17 @@ export type MessageType =
   | { type: 'GET_BOOKMARKS' }
   | { type: 'GET_COLLECTIONS' }
   | { type: 'CREATE_COLLECTION'; name: string }
-  | { type: 'IS_BOOKMARKED'; url: string };
+  | { type: 'IS_BOOKMARKED'; url: string }
+  // Quick Collection
+  | { type: 'COLLECT_ADD'; url: string; title: string; favicon?: string }
+  | { type: 'COLLECT_REMOVE'; id: string }
+  | { type: 'COLLECT_REMOVE_BATCH'; ids: string[] }
+  | { type: 'COLLECT_GET' }
+  | { type: 'COLLECT_CLEAR' }
+  | { type: 'COLLECT_IS_COLLECTED'; url: string }
+  // Data Export/Import
+  | { type: 'EXPORT_USER_DATA' }
+  | { type: 'IMPORT_USER_DATA'; data: string };
 
 export type MessageResponse =
   | { success: true; data: unknown }

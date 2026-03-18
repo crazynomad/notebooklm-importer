@@ -46,6 +46,30 @@ const zh = {
   'app.tabPodcast': '播客',
   'app.tabAI': 'AI 对话',
   'app.tabMore': '更多',
+  'app.tabCollection': '收集',
+
+  // ── Quick Collection ──
+  'collection.collect': '收集',
+  'collection.collected': '已收集',
+  'collection.count': '{count} 个页面',
+  'collection.selectAll': '全选',
+  'collection.deselectAll': '取消全选',
+  'collection.removeSelected': '移除选中',
+  'collection.clearAll': '清空全部',
+  'collection.empty': '收集篮是空的',
+  'collection.emptyHint': '浏览网页时，点击收集按钮将页面加入队列',
+  'collection.importing': '正在导入...',
+  'collection.importSelected': '导入选中 ({count})',
+  'collection.importAll': '全部导入到 NotebookLM ({count})',
+
+  // ── Data Transfer ──
+  'data.export': '导出数据',
+  'data.import': '导入数据',
+  'data.exportSuccess': '数据已导出',
+  'data.importSuccess': '数据导入成功，已导入 {count} 项',
+  'data.importError': '导入失败：文件格式不正确',
+  'data.exportHint': '导出收藏夹和导入历史到 JSON 文件',
+  'data.importHint': '从 JSON 文件恢复数据',
 
   // ── DocsImport ──
   'docs.yuque': '语雀',
@@ -270,6 +294,30 @@ const en: Record<keyof typeof zh, string> = {
   'app.tabPodcast': 'Podcast',
   'app.tabAI': 'AI Chat',
   'app.tabMore': 'More',
+  'app.tabCollection': 'Collect',
+
+  // ── Quick Collection ──
+  'collection.collect': 'Collect',
+  'collection.collected': 'Collected',
+  'collection.count': '{count} pages',
+  'collection.selectAll': 'Select all',
+  'collection.deselectAll': 'Deselect all',
+  'collection.removeSelected': 'Remove selected',
+  'collection.clearAll': 'Clear all',
+  'collection.empty': 'Collection is empty',
+  'collection.emptyHint': 'Click Collect to add pages as you browse',
+  'collection.importing': 'Importing...',
+  'collection.importSelected': 'Import selected ({count})',
+  'collection.importAll': 'Import all to NotebookLM ({count})',
+
+  // ── Data Transfer ──
+  'data.export': 'Export Data',
+  'data.import': 'Import Data',
+  'data.exportSuccess': 'Data exported',
+  'data.importSuccess': 'Import successful, {count} items imported',
+  'data.importError': 'Import failed: invalid file format',
+  'data.exportHint': 'Export bookmarks and history to JSON',
+  'data.importHint': 'Restore data from JSON file',
 
   // ── DocsImport ──
   'docs.yuque': 'Yuque',

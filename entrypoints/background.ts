@@ -148,6 +148,16 @@ import {
   createCollection,
   isBookmarked,
 } from '@/services/bookmarks';
+import {
+  addToCollection,
+  removeFromCollection,
+  removeFromCollectionBatch,
+  getCollection,
+  clearCollection,
+  isInCollection,
+  updateBadge,
+} from '@/services/collection';
+import { exportUserData, importUserData } from '@/services/data-transfer';
 import type { MessageType, MessageResponse, ClaudeConversation } from '@/lib/types';
 
 // Dev reload: allow external messages to trigger extension reload
@@ -169,8 +179,11 @@ const MENU_ID_LINK = 'import-link';
 export default defineBackground(() => {
   console.log('NotebookLM Jetpack background service started');
 
-  // Create context menus on install
+  // Create context menus on install & restore badge
   chrome.runtime.onInstalled.addListener(() => {
+    // Restore collection badge count
+    updateBadge();
+
     // Menu item for importing current page
     chrome.contextMenus.create({
       id: MENU_ID_PAGE,
@@ -971,6 +984,35 @@ async function handleMessage(message: MessageType): Promise<unknown> {
 
     case 'IS_BOOKMARKED':
       return await isBookmarked(message.url);
+
+    // ── Quick Collection ──
+    case 'COLLECT_ADD':
+      return await addToCollection(message.url, message.title, message.favicon);
+
+    case 'COLLECT_REMOVE':
+      await removeFromCollection(message.id);
+      return true;
+
+    case 'COLLECT_REMOVE_BATCH':
+      await removeFromCollectionBatch(message.ids);
+      return true;
+
+    case 'COLLECT_GET':
+      return await getCollection();
+
+    case 'COLLECT_CLEAR':
+      await clearCollection();
+      return true;
+
+    case 'COLLECT_IS_COLLECTED':
+      return await isInCollection(message.url);
+
+    // ── Data Export/Import ──
+    case 'EXPORT_USER_DATA':
+      return await exportUserData();
+
+    case 'IMPORT_USER_DATA':
+      return await importUserData(message.data);
 
     default:
       throw new Error('Unknown message type');
