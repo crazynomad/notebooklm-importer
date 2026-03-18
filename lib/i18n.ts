@@ -38,6 +38,7 @@ const zh = {
   'selectAtLeastOneArticle': '请至少选择一篇文章',
 
   // ── App ──
+  'app.openSidePanel': '在侧边栏中打开',
   'app.importHistory': '导入历史',
   'app.importingProgress': '正在导入 {completed}/{total}',
   'app.tabBookmarks': '收藏夹',
@@ -261,6 +262,7 @@ const en: Record<keyof typeof zh, string> = {
   'selectAtLeastOneArticle': 'Please select at least one article',
 
   // ── App ──
+  'app.openSidePanel': 'Open in Side Panel',
   'app.importHistory': 'Import History',
   'app.importingProgress': 'Importing {completed}/{total}',
   'app.tabBookmarks': 'Bookmarks',

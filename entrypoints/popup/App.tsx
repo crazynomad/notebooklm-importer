@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
-import { BookOpen, History, MessageCircle, Headphones, MoreHorizontal, Bookmark } from 'lucide-react';
+import { BookOpen, History, MessageCircle, Headphones, MoreHorizontal, Bookmark, PanelRight } from 'lucide-react';
 import type { ImportProgress } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/lib/i18n';
@@ -60,6 +60,19 @@ export default function App() {
             title={locale === 'zh' ? 'Switch to English' : '切换到中文'}
           >
             {locale === 'zh' ? 'EN' : '中'}
+          </button>
+          <button
+            onClick={async () => {
+              const currentWindow = await chrome.windows.getCurrent();
+              if (currentWindow.id != null) {
+                await chrome.sidePanel.open({ windowId: currentWindow.id });
+                window.close();
+              }
+            }}
+            className="p-1.5 text-gray-400 hover:text-notebooklm-blue hover:bg-notebooklm-light rounded-lg transition-all duration-150 btn-press"
+            title={t('app.openSidePanel')}
+          >
+            <PanelRight className="w-4 h-4" />
           </button>
           <button
             onClick={() => setShowHistory(true)}
