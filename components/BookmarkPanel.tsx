@@ -230,6 +230,20 @@ export function BookmarkPanel({ onProgress }: Props) {
               <img src={currentTabInfo.favicon} className="w-4 h-4 flex-shrink-0" alt="" />
             )}
             <span className="flex-1 text-sm text-gray-700 truncate">{currentTabInfo.title}</span>
+            {isCurrentBookmarked ? (
+              <span className="flex items-center gap-1 text-xs text-notebooklm-blue bg-blue-50/80 px-2 py-1 rounded-md border border-blue-200/40">
+                <Bookmark className="w-3 h-3 fill-current" />
+                {t('bookmark.bookmarked')}
+              </span>
+            ) : (
+              <button
+                onClick={() => handleAddBookmark()}
+                className="btn-press flex items-center gap-1 px-3 py-1.5 bg-notebooklm-blue text-white text-xs rounded-md hover:bg-notebooklm-blue-dark transition-colors shadow-btn hover:shadow-btn-hover transition-all duration-150"
+              >
+                <BookmarkPlus className="w-3 h-3" />
+                {t('bookmark.addBookmark')}
+              </button>
+            )}
             <button
               onClick={() => {
                 if (!currentTabInfo?.url) return;
@@ -248,25 +262,11 @@ export function BookmarkPanel({ onProgress }: Props) {
                 setState('importing');
               }}
               disabled={state === 'importing'}
-              className="btn-press flex items-center gap-1 px-3 py-1.5 bg-notebooklm-blue text-white text-xs rounded-md hover:bg-notebooklm-blue-dark transition-colors shadow-btn hover:shadow-btn-hover transition-all duration-150"
+              className="btn-press flex items-center gap-1 px-3 py-1.5 bg-amber-500 text-white text-xs rounded-md hover:bg-amber-600 transition-colors shadow-btn hover:shadow-btn-hover transition-all duration-150"
             >
               {state === 'importing' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
               {t('bookmark.importNow')}
             </button>
-            {isCurrentBookmarked ? (
-              <span className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50/80 px-2 py-1 rounded-md border border-amber-200/40">
-                <Bookmark className="w-3 h-3 fill-current" />
-                {t('bookmark.bookmarked')}
-              </span>
-            ) : (
-              <button
-                onClick={() => handleAddBookmark()}
-                className="btn-press flex items-center gap-1 px-3 py-1.5 bg-amber-500 text-white text-xs rounded-md hover:bg-amber-600 transition-colors shadow-btn hover:shadow-btn-hover transition-all duration-150"
-              >
-                <BookmarkPlus className="w-3 h-3" />
-                {t('bookmark.addBookmark')}
-              </button>
-            )}
           </div>
         </div>
       )}
@@ -277,7 +277,7 @@ export function BookmarkPanel({ onProgress }: Props) {
           <button
             onClick={() => { setActiveCollection('all'); deselectAll(); }}
             className={`btn-press px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors ${
-              activeCollection === 'all' ? 'bg-amber-500 text-white shadow-sm' : 'bg-gray-100/60 text-gray-600 hover:bg-gray-200'
+              activeCollection === 'all' ? 'bg-notebooklm-blue text-white shadow-sm' : 'bg-gray-100/60 text-gray-600 hover:bg-gray-200'
             }`}
           >
             {t('bookmark.all')} ({bookmarks.length})
@@ -289,7 +289,7 @@ export function BookmarkPanel({ onProgress }: Props) {
                 key={col}
                 onClick={() => { setActiveCollection(col); deselectAll(); }}
                 className={`btn-press px-2.5 py-1 text-xs rounded-full whitespace-nowrap transition-colors ${
-                  activeCollection === col ? 'bg-amber-500 text-white shadow-sm' : 'bg-gray-100/60 text-gray-600 hover:bg-gray-200'
+                  activeCollection === col ? 'bg-notebooklm-blue text-white shadow-sm' : 'bg-gray-100/60 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 {col} ({count})
@@ -314,10 +314,10 @@ export function BookmarkPanel({ onProgress }: Props) {
             value={newCollectionName}
             onChange={(e) => setNewCollectionName(e.target.value)}
             placeholder={t('bookmark.collectionName')}
-            className="flex-1 px-3 py-1.5 border border-gray-200/60 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+            className="flex-1 px-3 py-1.5 border border-gray-200/60 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40"
             onKeyDown={(e) => { if (e.key === 'Enter') handleCreateCollection(); }}
           />
-          <button onClick={handleCreateCollection} className="btn-press px-3 py-1.5 bg-amber-500 text-white text-xs rounded-lg hover:bg-amber-600">
+          <button onClick={handleCreateCollection} className="btn-press px-3 py-1.5 bg-notebooklm-blue text-white text-xs rounded-lg hover:bg-notebooklm-blue-dark">
             {t('create')}
           </button>
           <button onClick={() => setShowNewCollection(false)} className="btn-press p-1.5 text-gray-400 hover:text-gray-600">
@@ -334,7 +334,7 @@ export function BookmarkPanel({ onProgress }: Props) {
               {selectedIds.size > 0 ? t('bookmark.selectedItems', { count: selectedIds.size }) : t('bookmark.totalItems', { count: filteredBookmarks.length })}
             </span>
             <div className="flex gap-2 text-xs">
-              <button onClick={selectAll} className="btn-press text-amber-600 hover:underline">{t('selectAll')}</button>
+              <button onClick={selectAll} className="btn-press text-notebooklm-blue hover:underline">{t('selectAll')}</button>
               <button onClick={deselectAll} className="btn-press text-gray-400 hover:underline">{t('cancel')}</button>
               {selectedIds.size > 0 && (
                 <>
@@ -366,7 +366,7 @@ export function BookmarkPanel({ onProgress }: Props) {
                   type="checkbox"
                   checked={selectedIds.has(item.id)}
                   onChange={() => toggleSelect(item.id)}
-                  className="rounded border-gray-300 text-amber-500 focus:ring-amber-500"
+                  className="rounded border-gray-300 text-notebooklm-blue focus:ring-blue-500"
                 />
                 {item.favicon && <img src={item.favicon} className="w-4 h-4 flex-shrink-0" alt="" />}
                 <div className="flex-1 min-w-0">
@@ -452,22 +452,22 @@ export function BookmarkPanel({ onProgress }: Props) {
         </>
       ) : (
         <div className="flex flex-col items-center py-6 bg-surface-sunken rounded-xl px-5">
-          <Bookmark className="w-8 h-8 text-amber-400/60 mb-2" />
+          <Bookmark className="w-8 h-8 text-blue-400/60 mb-2" />
           <p className="text-sm text-gray-600 font-medium">{t('bookmark.emptyTitle')}</p>
           <p className="text-xs text-gray-400 mt-1.5 mb-3 text-center leading-relaxed max-w-[280px]">
             {t('bookmark.emptyDesc')}
           </p>
           <div className="w-full space-y-2 text-[11px] text-gray-500 bg-white/60 rounded-lg p-3 border border-gray-100/80">
             <div className="flex items-start gap-2">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-[10px] font-bold">1</span>
+              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 text-notebooklm-blue flex items-center justify-center text-[10px] font-bold">1</span>
               <span>{t('bookmark.step1')}</span>
             </div>
             <div className="flex items-start gap-2">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-[10px] font-bold">2</span>
+              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 text-notebooklm-blue flex items-center justify-center text-[10px] font-bold">2</span>
               <span>{t('bookmark.step2')}</span>
             </div>
             <div className="flex items-start gap-2">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-[10px] font-bold">3</span>
+              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 text-notebooklm-blue flex items-center justify-center text-[10px] font-bold">3</span>
               <span>{t('bookmark.step3')}</span>
             </div>
           </div>

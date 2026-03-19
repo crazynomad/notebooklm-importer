@@ -33,12 +33,16 @@ export function NotebookSelector() {
           if (found) {
             setSelected(found);
           } else {
-            // Saved notebook no longer exists, fall back
-            setSelected(nbData.current || nbData.notebooks[0] || null);
+            // Saved notebook no longer exists, fall back and persist
+            const fallback = nbData.current || nbData.notebooks[0] || null;
+            setSelected(fallback);
+            if (fallback) setSelectedNotebook(fallback);
           }
         } else {
-          // No saved selection — use current from open tab, or first notebook
-          setSelected(nbData.current || nbData.notebooks[0] || null);
+          // No saved selection — use current from open tab, or first notebook, and persist
+          const initial = nbData.current || nbData.notebooks[0] || null;
+          setSelected(initial);
+          if (initial) setSelectedNotebook(initial);
         }
       }
     } catch {
