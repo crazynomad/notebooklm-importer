@@ -13,7 +13,6 @@ import { BookmarkPanel } from '@/components/BookmarkPanel';
 import { HistoryPanel } from '@/components/HistoryPanel';
 import { RescueBanner } from '@/components/RescueBanner';
 import { NotebookSelector } from '@/components/NotebookSelector';
-import { OnboardingGuide } from '@/components/OnboardingGuide';
 
 export default function App() {
   const { t, locale, setLocale } = useI18n();
@@ -77,9 +76,6 @@ export default function App() {
       <div className="px-3.5 pt-3">
         <NotebookSelector />
       </div>
-
-      {/* Onboarding guide — shown only on first use */}
-      <OnboardingGuide />
 
       {/* Progress indicator */}
       {importProgress && (
