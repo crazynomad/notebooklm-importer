@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome — NotebookLM Jetpack</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', system-ui, sans-serif;
+        background: #FAFBFC;
+        color: #1a1a2e;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        -webkit-font-smoothing: antialiased;
+      }
+      .container {
+        max-width: 480px;
+        text-align: center;
+        padding: 60px 32px;
+      }
+      .logo {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 24px;
+      }
+      h1 {
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1.3;
+        margin-bottom: 8px;
+      }
+      h1 span {
+        color: #1A73E8;
+      }
+      .subtitle {
+        font-size: 16px;
+        color: #666;
+        line-height: 1.6;
+        margin-bottom: 40px;
+      }
+      .pin-tip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #E8F0FE;
+        border: 1px solid rgba(26, 115, 232, 0.15);
+        border-radius: 12px;
+        padding: 14px 24px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #1A73E8;
+        margin-bottom: 48px;
+      }
+      .pin-icon { font-size: 18px; }
+      .features {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 48px;
+        text-align: left;
+      }
+      .feature {
+        background: white;
+        border: 1px solid rgba(0,0,0,0.06);
+        border-radius: 12px;
+        padding: 16px;
+      }
+      .feature-icon { font-size: 20px; margin-bottom: 8px; }
+      .feature-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 4px;
+      }
+      .feature-desc {
+        font-size: 12px;
+        color: #888;
+        line-height: 1.5;
+      }
+      .footer {
+        font-size: 12px;
+        color: #aaa;
+      }
+      .footer a {
+        color: #1A73E8;
+        text-decoration: none;
+      }
+      .footer a:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <img src="/icons/icon-128.png" alt="NotebookLM Jetpack" class="logo" />
+
+      <h1>Welcome to <span>NotebookLM Jetpack</span></h1>
+      <p class="subtitle">Import content from anywhere into NotebookLM — doc sites, podcasts, AI conversations, and more.</p>
+
+      <div class="pin-tip">
+        <span class="pin-icon">📌</span>
+        Pin Jetpack to your Chrome toolbar for quick access
+      </div>
+
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">📑</div>
+          <div class="feature-title">Doc Sites</div>
+          <div class="feature-desc">Batch import from Docusaurus, MkDocs, VitePress & 14+ frameworks</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🎙️</div>
+          <div class="feature-title">Podcasts</div>
+          <div class="feature-desc">Import episodes from Apple Podcasts & Xiaoyuzhou FM</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">💬</div>
+          <div class="feature-title">AI Conversations</div>
+          <div class="feature-desc">Extract chats from Claude, ChatGPT & Gemini</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🔖</div>
+          <div class="feature-title">Bookmarks</div>
+          <div class="feature-desc">Save pages & batch import as one PDF to save source slots</div>
+        </div>
+      </div>
+
+      <p class="footer">
+        <a href="https://github.com/crazynomad/notebooklm-jetpack" target="_blank">GitHub</a>
+        &nbsp;·&nbsp;
+        <a href="https://jetpack.boing.work" target="_blank">Docs</a>
+        &nbsp;·&nbsp;
+        Made with ❤️ by <a href="https://www.youtube.com/@greentrainpodcast" target="_blank">绿皮火车</a>
+      </p>
+    </div>
+  </body>
+</html>
