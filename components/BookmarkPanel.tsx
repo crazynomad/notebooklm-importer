@@ -14,6 +14,7 @@ import {
   ChevronDown,
   ChevronUp,
   X,
+  Upload,
 } from 'lucide-react';
 import type { ImportProgress } from '@/lib/types';
 import type { BookmarkItem } from '@/services/bookmarks';
@@ -229,6 +230,29 @@ export function BookmarkPanel({ onProgress }: Props) {
               <img src={currentTabInfo.favicon} className="w-4 h-4 flex-shrink-0" alt="" />
             )}
             <span className="flex-1 text-sm text-gray-700 truncate">{currentTabInfo.title}</span>
+            <button
+              onClick={() => {
+                if (!currentTabInfo?.url) return;
+                chrome.runtime.sendMessage(
+                  { type: 'IMPORT_URL', url: currentTabInfo.url },
+                  (resp) => {
+                    if (resp?.success) {
+                      setState('success');
+                      setTimeout(() => setState('idle'), 2000);
+                    } else {
+                      setError(resp?.error || t('importFailed'));
+                      setState('error');
+                    }
+                  }
+                );
+                setState('importing');
+              }}
+              disabled={state === 'importing'}
+              className="btn-press flex items-center gap-1 px-3 py-1.5 bg-notebooklm-blue text-white text-xs rounded-md hover:bg-notebooklm-blue-dark transition-colors shadow-btn hover:shadow-btn-hover transition-all duration-150"
+            >
+              {state === 'importing' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
+              {t('bookmark.importNow')}
+            </button>
             {isCurrentBookmarked ? (
               <span className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50/80 px-2 py-1 rounded-md border border-amber-200/40">
                 <Bookmark className="w-3 h-3 fill-current" />

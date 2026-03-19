@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ChevronDown, ExternalLink, RefreshCw, Pencil } from 'lucide-react';
 import type { NotebookInfo } from '@/lib/types';
 import { useI18n } from '@/lib/i18n';
+import { setSelectedNotebook, getSelectedNotebook } from '@/lib/config';
 
 interface NotebookData {
   current: NotebookInfo | null;
@@ -14,12 +15,31 @@ export function NotebookSelector() {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
 
+  const [selected, setSelected] = useState<NotebookInfo | null>(null);
+
   const fetchNotebooks = useCallback(async (force = false) => {
     setLoading(true);
     try {
-      const resp = await chrome.runtime.sendMessage({ type: 'GET_NOTEBOOKS', force });
+      const [resp, savedSelection] = await Promise.all([
+        chrome.runtime.sendMessage({ type: 'GET_NOTEBOOKS', force }),
+        getSelectedNotebook(),
+      ]);
       if (resp?.success) {
-        setData(resp.data as NotebookData);
+        const nbData = resp.data as NotebookData;
+        setData(nbData);
+        // Restore saved selection if it still exists in the list
+        if (savedSelection) {
+          const found = nbData.notebooks.find(nb => nb.id === savedSelection.id);
+          if (found) {
+            setSelected(found);
+          } else {
+            // Saved notebook no longer exists, fall back
+            setSelected(nbData.current || nbData.notebooks[0] || null);
+          }
+        } else {
+          // No saved selection — use current from open tab, or first notebook
+          setSelected(nbData.current || nbData.notebooks[0] || null);
+        }
       }
     } catch {
       // Extension context unavailable
@@ -31,19 +51,23 @@ export function NotebookSelector() {
     fetchNotebooks();
   }, [fetchNotebooks]);
 
-  const activeNotebook = data?.current || (data?.notebooks?.[0] ?? null);
+  const activeNotebook = selected;
   const notebooks = data?.notebooks || [];
+
+  const handleSelect = (nb: NotebookInfo) => {
+    setSelected(nb);
+    setSelectedNotebook(nb);
+    setOpen(false);
+  };
 
   const handleNavigate = (url: string) => {
     chrome.tabs.query({ url: 'https://notebooklm.google.com/*' }, (tabs) => {
       if (tabs.length > 0 && tabs[0].id) {
-        // Navigate existing NLM tab
         chrome.tabs.update(tabs[0].id, { url, active: true });
       } else {
         chrome.tabs.create({ url });
       }
     });
-    setOpen(false);
   };
 
   // Loading state — show skeleton while fetching notebooks
@@ -130,7 +154,7 @@ export function NotebookSelector() {
             return (
               <button
                 key={nb.id}
-                onClick={() => handleNavigate(nb.url)}
+                onClick={() => handleSelect(nb)}
                 className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors ${
                   isActive ? 'bg-blue-50/50' : 'hover:bg-gray-50'
                 }`}

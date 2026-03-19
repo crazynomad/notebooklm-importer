@@ -10,6 +10,8 @@
   body {
     width: 400px;
     min-height: 480px;
+    max-height: 600px;
+    overflow-y: auto;
     margin: 0;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Sans SC', 'Segoe UI', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;

@@ -13,6 +13,7 @@ import { BookmarkPanel } from '@/components/BookmarkPanel';
 import { HistoryPanel } from '@/components/HistoryPanel';
 import { RescueBanner } from '@/components/RescueBanner';
 import { NotebookSelector } from '@/components/NotebookSelector';
+import { OnboardingTour } from '@/components/OnboardingTour';
 
 export default function App() {
   const { t, locale, setLocale } = useI18n();
@@ -73,7 +74,7 @@ export default function App() {
       </div>
 
       {/* Notebook selector — shows current connected notebook */}
-      <div className="px-3.5 pt-3">
+      <div className="px-3.5 pt-3" data-tour="notebook-selector">
         <NotebookSelector />
       </div>
 
@@ -108,7 +109,7 @@ export default function App() {
 
       {/* Tabs */}
       <Tabs.Root value={activeTab} onValueChange={setActiveTab} className="flex flex-col">
-        <Tabs.List className="flex glass border-b border-border px-2 gap-0.5">
+        <Tabs.List className="flex glass border-b border-border px-2 gap-0.5" data-tour="tab-list">
           {[
             { value: 'bookmark', icon: Bookmark, label: t('app.tabBookmarks') },
             { value: 'docs', icon: BookOpen, label: t('app.tabDocs') },
@@ -119,6 +120,7 @@ export default function App() {
             <Tabs.Trigger
               key={value}
               value={value}
+              data-tour={`tab-${value}`}
               className={cn(
                 'flex-1 py-2 text-[11px] font-medium text-gray-400',
                 'flex flex-col items-center gap-0.5 relative',
@@ -154,6 +156,9 @@ export default function App() {
           <MorePanel onProgress={setImportProgress} />
         </Tabs.Content>
       </Tabs.Root>
+
+      {/* First-time onboarding tour */}
+      <OnboardingTour />
     </div>
   );
 }

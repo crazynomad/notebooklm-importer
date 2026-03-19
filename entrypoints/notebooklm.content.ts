@@ -13,6 +13,13 @@ export default defineContentScript({
     console.log('NotebookLM Jetpack content script loaded');
 
     chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+      // Readiness check — returns true if the page has the "Add source" button
+      if (message.type === 'PING') {
+        const ready = !!findAddSourceButton();
+        sendResponse({ ready });
+        return true;
+      }
+
       if (message.type === 'IMPORT_URL') {
         importUrlToNotebookLM(message.url)
           .then((success) => sendResponse({ success }))

@@ -171,7 +171,12 @@ export default defineBackground(() => {
   console.log('NotebookLM Jetpack background service started');
 
   // Create context menus on install
-  chrome.runtime.onInstalled.addListener(() => {
+  chrome.runtime.onInstalled.addListener((details) => {
+    // Open welcome page on first install
+    if (details.reason === 'install') {
+      chrome.tabs.create({ url: chrome.runtime.getURL('/welcome.html') });
+    }
+
     // Menu item for importing current page
     chrome.contextMenus.create({
       id: MENU_ID_PAGE,

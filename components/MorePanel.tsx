@@ -13,9 +13,11 @@ import {
   Github,
   Heart,
   Info,
+  HelpCircle,
 } from 'lucide-react';
 import type { ImportProgress, ImportItem, RssFeedItem } from '@/lib/types';
 import { t } from '@/lib/i18n';
+import { resetOnboarding } from '@/components/OnboardingTour';
 
 interface Props {
   onProgress: (progress: ImportProgress | null) => void;
@@ -235,6 +237,23 @@ export function MorePanel({ onProgress }: Props) {
           )}
         </div>
       )}
+
+      {/* Replay Tour */}
+      <button
+        onClick={async () => {
+          await resetOnboarding();
+          window.location.reload();
+        }}
+        className="w-full flex items-center gap-3 p-2.5 bg-blue-50/60 border border-blue-100/40 rounded-xl hover:bg-blue-100/80 transition-colors group"
+      >
+        <div className="w-8 h-8 bg-notebooklm-blue rounded-lg flex items-center justify-center flex-shrink-0">
+          <HelpCircle className="w-4 h-4 text-white" />
+        </div>
+        <div className="flex-1 min-w-0 text-left">
+          <p className="text-sm font-medium text-gray-800 group-hover:text-notebooklm-blue">{t('onboarding.replayTour')}</p>
+          <p className="text-xs text-gray-500">{t('onboarding.replayTourDesc')}</p>
+        </div>
+      </button>
 
       {/* About Section */}
       <div className="border border-border rounded-lg overflow-hidden shadow-soft">

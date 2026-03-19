@@ -170,6 +170,7 @@ const zh = {
   'bookmark.collection': '收藏合集',
   'bookmark.bookmarked': '已收藏',
   'bookmark.addBookmark': '收藏',
+  'bookmark.importNow': '导入',
   'bookmark.all': '全部',
   'bookmark.newCollection': '新建集合',
   'bookmark.collectionName': '集合名称',
@@ -200,6 +201,22 @@ const zh = {
   'batch.urlList': 'URL 列表',
   'batch.placeholder': '每行一个 URL，或用逗号分隔',
   'batch.batchImport': '批量导入',
+
+  // ── Onboarding ──
+  'onboarding.welcomeTitle': '欢迎使用 NotebookLM Jetpack!',
+  'onboarding.welcomeDesc': '将各种内容一键导入 NotebookLM。需要快速了解一下吗？',
+  'onboarding.skip': '跳过',
+  'onboarding.showMeAround': '开始引导',
+  'onboarding.next': '下一步',
+  'onboarding.prev': '上一步',
+  'onboarding.done': '完成',
+  'onboarding.stepNotebook': '选择你要导入内容的 Notebook，点击切换到其他 Notebook。',
+  'onboarding.stepBookmark': '收藏网页到书签，积累多个后一键批量导入到 NotebookLM，节省 source 配额。',
+  'onboarding.stepDocs': '输入文档站 URL，自动分析站点结构，批量导入整站文档。支持 Docusaurus、MkDocs 等 14+ 框架。',
+  'onboarding.stepPodcast': '粘贴 Apple Podcasts 或小宇宙链接，选择单集直接导入到 NotebookLM。',
+  'onboarding.stepAI': '一键提取 Claude、ChatGPT、Gemini 的对话内容，导入为 NotebookLM 来源。',
+  'onboarding.replayTour': '重新引导',
+  'onboarding.replayTourDesc': '再看一次新手引导',
 
   // ── MorePanel ──
   'more.rssImport': 'RSS 导入',
@@ -401,6 +418,7 @@ const en: Record<keyof typeof zh, string> = {
   'bookmark.collection': 'Bookmark Collection',
   'bookmark.bookmarked': 'Bookmarked',
   'bookmark.addBookmark': 'Bookmark',
+  'bookmark.importNow': 'Import',
   'bookmark.all': 'All',
   'bookmark.newCollection': 'New Collection',
   'bookmark.collectionName': 'Collection name',
@@ -431,6 +449,22 @@ const en: Record<keyof typeof zh, string> = {
   'batch.urlList': 'URL List',
   'batch.placeholder': 'One URL per line, or comma-separated',
   'batch.batchImport': 'Batch Import',
+
+  // ── Onboarding ──
+  'onboarding.welcomeTitle': 'Welcome to NotebookLM Jetpack!',
+  'onboarding.welcomeDesc': 'Import content from anywhere into NotebookLM. Want a quick tour?',
+  'onboarding.skip': 'Skip',
+  'onboarding.showMeAround': 'Show Me Around',
+  'onboarding.next': 'Next',
+  'onboarding.prev': 'Previous',
+  'onboarding.done': 'Done',
+  'onboarding.stepNotebook': 'Select the Notebook you want to import into, or switch to another one.',
+  'onboarding.stepBookmark': 'Save pages to bookmarks, then batch import them into NotebookLM to save source slots.',
+  'onboarding.stepDocs': 'Enter a doc site URL to auto-analyze its structure and batch import. Supports Docusaurus, MkDocs, and 14+ frameworks.',
+  'onboarding.stepPodcast': 'Paste an Apple Podcasts or Xiaoyuzhou link, pick episodes and import directly into NotebookLM.',
+  'onboarding.stepAI': 'Extract conversations from Claude, ChatGPT, or Gemini and import them as NotebookLM sources.',
+  'onboarding.replayTour': 'Replay Tour',
+  'onboarding.replayTourDesc': 'View the onboarding guide again',
 
   // ── MorePanel ──
   'more.rssImport': 'RSS Import',

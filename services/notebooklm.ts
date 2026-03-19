@@ -1,4 +1,4 @@
-import { NOTEBOOKLM_CONFIG } from '@/lib/config';
+import { NOTEBOOKLM_CONFIG, getSelectedNotebook } from '@/lib/config';
 import { delay } from '@/lib/utils';
 import type { ImportItem, ImportProgress } from '@/lib/types';
 import { addToHistory } from './history';
@@ -39,35 +39,58 @@ async function sendImportTextMessage(
   });
 }
 
-// Find or create NotebookLM tab
-async function getNotebookLMTab(): Promise<chrome.tabs.Tab> {
-  // Look for existing NotebookLM tab
-  const tabs = await chrome.tabs.query({ url: `${NOTEBOOKLM_CONFIG.baseUrl}/*` });
-
-  if (tabs.length > 0 && tabs[0].id) {
-    // Focus existing tab
-    await chrome.tabs.update(tabs[0].id, { active: true });
-    return tabs[0];
-  }
-
-  // Create new tab
-  const newTab = await chrome.tabs.create({ url: NOTEBOOKLM_CONFIG.baseUrl });
-
-  // Wait for tab to load
-  await new Promise<void>((resolve) => {
-    const listener = (tabId: number, changeInfo: chrome.tabs.TabChangeInfo) => {
-      if (tabId === newTab.id && changeInfo.status === 'complete') {
+// Wait for a tab to reach status 'complete', with timeout
+function waitForTabLoad(tabId: number, timeout = 30000): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      chrome.tabs.onUpdated.removeListener(listener);
+      reject(new Error('Tab load timed out'));
+    }, timeout);
+    const listener = (id: number, changeInfo: chrome.tabs.TabChangeInfo) => {
+      if (id === tabId && changeInfo.status === 'complete') {
+        clearTimeout(timer);
         chrome.tabs.onUpdated.removeListener(listener);
         resolve();
       }
     };
     chrome.tabs.onUpdated.addListener(listener);
   });
+}
 
-  // Give it a bit more time to fully initialize
-  await delay(1000);
+// Ensure the target notebook is open in a tab and ready for import.
+// Strategy: find existing tab on the right notebook, or open a new one.
+async function getNotebookLMTab(): Promise<chrome.tabs.Tab> {
+  const selected = await getSelectedNotebook();
+  const targetUrl = selected?.url || NOTEBOOKLM_CONFIG.baseUrl;
 
-  return newTab;
+  // Check if there's already a tab on the target notebook
+  if (selected) {
+    const exact = await chrome.tabs.query({ url: `${NOTEBOOKLM_CONFIG.baseUrl}/notebook/${selected.id}*` });
+    if (exact.length > 0 && exact[0].id) {
+      await chrome.tabs.update(exact[0].id, { active: true });
+      return exact[0];
+    }
+  }
+
+  // No matching tab — create a new one
+  const newTab = await chrome.tabs.create({ url: targetUrl });
+  await waitForTabLoad(newTab.id!);
+  // Extra wait for NLM SPA to render after DOM 'complete'
+  await delay(2000);
+  return (await chrome.tabs.get(newTab.id!));
+}
+
+// Inject content script into the tab
+async function ensureContentScript(tabId: number): Promise<void> {
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: ['content-scripts/notebooklm.js'],
+    });
+  } catch {
+    // Script might already be injected
+  }
+  await delay(500);
 }
 
 // Import a single URL to NotebookLM
@@ -76,17 +99,8 @@ export async function importUrl(url: string): Promise<boolean> {
     const tab = await getNotebookLMTab();
     if (!tab.id) throw new Error('Failed to get NotebookLM tab');
 
-    // Ensure content script is injected
-    try {
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ['content-scripts/notebooklm.js'],
-      });
-    } catch {
-      // Script might already be injected
-    }
+    await ensureContentScript(tab.id);
 
-    await delay(500);
     const success = await sendImportMessage(tab.id, url);
 
     // Record to history
@@ -121,17 +135,7 @@ export async function importBatch(
   const tab = await getNotebookLMTab();
   if (!tab.id) throw new Error('Failed to get NotebookLM tab');
 
-  // Ensure content script is injected
-  try {
-    await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      files: ['content-scripts/notebooklm.js'],
-    });
-  } catch {
-    // Script might already be injected
-  }
-
-  await delay(500);
+  await ensureContentScript(tab.id);
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
@@ -173,17 +177,8 @@ export async function importText(text: string, title?: string): Promise<boolean>
     const tab = await getNotebookLMTab();
     if (!tab.id) throw new Error('Failed to get NotebookLM tab');
 
-    // Ensure content script is injected
-    try {
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ['content-scripts/notebooklm.js'],
-      });
-    } catch {
-      // Script might already be injected
-    }
+    await ensureContentScript(tab.id);
 
-    await delay(500);
     const success = await sendImportTextMessage(tab.id, text, title);
 
     // Record to history
