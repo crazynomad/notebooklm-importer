@@ -257,6 +257,11 @@ const zh = {
   'more.ytDesc': 'YouTube 频道 · 教程与分享',
   'more.ghDesc': '开源项目 · 欢迎 Star',
   'more.madeBy': 'YouTuber「绿皮火车」',
+  'more.tutorial': '使用教程',
+  'more.tutorialDesc': '5 分钟上手 NotebookLM Jetpack',
+  'more.rateTitle': '喜欢 Jetpack？',
+  'more.rateDesc': '在 Chrome 商店留下评价，帮助更多人发现我们',
+  'more.rateBtn': '去评价',
 
   // ── RssImport ──
   'rss.feedUrl': 'RSS 订阅地址',
@@ -532,6 +537,11 @@ const en: Record<keyof typeof zh, string> = {
   'more.ytDesc': 'YouTube Channel · Tutorials',
   'more.ghDesc': 'Open Source · Star',
   'more.madeBy': 'YouTuber「绿皮火车」',
+  'more.tutorial': 'Tutorial',
+  'more.tutorialDesc': 'Get started with NotebookLM Jetpack in 5 min',
+  'more.rateTitle': 'Enjoying Jetpack?',
+  'more.rateDesc': 'Leave a review on Chrome Web Store to help others find us',
+  'more.rateBtn': 'Rate',
 
   // ── RssImport ──
   'rss.feedUrl': 'RSS Feed URL',

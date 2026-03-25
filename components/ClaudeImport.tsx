@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   MessageCircle,
   Loader2,
@@ -7,7 +7,7 @@ import {
   RefreshCw,
   Share2,
 } from 'lucide-react';
-import type { ClaudeConversation, QAPair, ImportProgress } from '@/lib/types';
+import type { ClaudeConversation, ImportProgress } from '@/lib/types';
 import { t } from '@/lib/i18n';
 
 interface Props {
@@ -41,6 +41,8 @@ export function ClaudeImport({ onProgress }: Props) {
   const [platformInfo, setPlatformInfo] = useState<ReturnType<typeof detectPlatform>>(null);
   const [currentTabId, setCurrentTabId] = useState<number | null>(null);
 
+  const [autoExtracted, setAutoExtracted] = useState(false);
+
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const tab = tabs[0];
@@ -52,7 +54,7 @@ export function ClaudeImport({ onProgress }: Props) {
     });
   }, []);
 
-  const handleExtract = async () => {
+  const handleExtract = useCallback(async () => {
     if (!currentTabId || !platformInfo) return;
 
     setState('extracting');
@@ -82,7 +84,25 @@ export function ClaudeImport({ onProgress }: Props) {
         }
       }
     );
-  };
+  }, [currentTabId, platformInfo]);
+
+  // Auto-extract when on a specific conversation page (not homepage)
+  useEffect(() => {
+    if (!currentTabId || !platformInfo || autoExtracted || state !== 'idle') return;
+    chrome.tabs.get(currentTabId, (tab) => {
+      if (chrome.runtime.lastError || !tab?.url) return;
+      const url = tab.url;
+      const isConversationPage =
+        /claude\.ai\/chat\/[a-f0-9-]+/.test(url) ||
+        /chatgpt\.com\/c\//.test(url) ||
+        /chat\.openai\.com\/c\//.test(url) ||
+        /gemini\.google\.com\/app\/[a-f0-9]+/.test(url);
+      if (isConversationPage) {
+        setAutoExtracted(true);
+        handleExtract();
+      }
+    });
+  }, [currentTabId, platformInfo, autoExtracted, state, handleExtract]);
 
   const handleImport = async () => {
     if (!conversation) return;
@@ -92,36 +112,6 @@ export function ClaudeImport({ onProgress }: Props) {
 
     setState('importing');
     setError('');
-
-    // Check for NotebookLM tab
-    const nlmTabs = await chrome.tabs.query({ url: 'https://notebooklm.google.com/*' });
-    if (nlmTabs.length === 0) {
-      setState('error');
-      setError(t('claude.openNotebook'));
-      return;
-    }
-
-    // Use the first NotebookLM tab
-    const nlmTab = nlmTabs[0];
-    if (!nlmTab.id) {
-      setState('error');
-      setError(t('claude.cannotGetNlmTab'));
-      return;
-    }
-
-    // Check if it's a notebook page (has notebook ID in URL)
-    if (!/\/notebook\//.test(nlmTab.url || '')) {
-      setState('error');
-      setError(t('claude.openNotebookNotHome'));
-      return;
-    }
-
-    // Detect platform name
-    const platformName = platformInfo?.name || 'AI';
-
-    // Format content as markdown (rescue-style: title + text import)
-    const content = formatPairsForImport(conversation.title, conversation.url, platformName, selected);
-    const title = conversation.title;
 
     onProgress({
       total: 1,
@@ -361,40 +351,4 @@ export function ClaudeImport({ onProgress }: Props) {
       )}
     </div>
   );
-}
-
-/** Format selected Q&A pairs as markdown for text import */
-function formatPairsForImport(
-  title: string,
-  url: string,
-  platform: string,
-  pairs: QAPair[]
-): string {
-  const lines: string[] = [];
-  lines.push(`# ${title}`);
-  lines.push('');
-  lines.push(`**${t('claude.source')}**: ${platform} ${t('claude.conversation')}`);
-  lines.push(`**URL**: ${url}`);
-  lines.push('');
-  lines.push('---');
-  lines.push('');
-
-  for (const pair of pairs) {
-    if (pair.question) {
-      lines.push('## 👤 Human');
-      lines.push('');
-      lines.push(pair.question);
-      lines.push('');
-    }
-    if (pair.answer) {
-      lines.push(`## 🤖 ${platform}`);
-      lines.push('');
-      lines.push(pair.answer);
-      lines.push('');
-    }
-    lines.push('---');
-    lines.push('');
-  }
-
-  return lines.join('\n');
 }

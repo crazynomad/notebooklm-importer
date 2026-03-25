@@ -12,8 +12,9 @@ import {
   Youtube,
   Github,
   Heart,
-  Info,
   HelpCircle,
+  Star,
+  PlayCircle,
 } from 'lucide-react';
 import type { ImportProgress, ImportItem, RssFeedItem } from '@/lib/types';
 import { t } from '@/lib/i18n';
@@ -255,63 +256,70 @@ export function MorePanel({ onProgress }: Props) {
         </div>
       </button>
 
-      {/* About Section */}
-      <div className="border border-border rounded-lg overflow-hidden shadow-soft">
-        <div className="px-3 py-2.5 bg-surface-sunken">
-          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-            <Info className="w-4 h-4 text-blue-500" />
-            {t('more.about')}
-          </div>
+      {/* Tutorial Video */}
+      <a
+        href="https://youtu.be/9gPTuJZRHJk"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-3 p-2.5 bg-red-50/60 border border-red-100/40 rounded-xl hover:bg-red-100/80 transition-colors group"
+      >
+        <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center flex-shrink-0">
+          <PlayCircle className="w-4 h-4 text-white" />
         </div>
-        <div className="p-3 space-y-3">
-          {/* YouTube Channel */}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-gray-800 group-hover:text-red-700">{t('more.tutorial')}</p>
+          <p className="text-xs text-gray-500">{t('more.tutorialDesc')}</p>
+        </div>
+        <ExternalLink className="w-3.5 h-3.5 text-gray-400 group-hover:text-red-500 flex-shrink-0" />
+      </a>
+
+      {/* Rate on Chrome Web Store */}
+      <div className="flex items-center gap-3 p-2.5 bg-amber-50/60 border border-amber-100/40 rounded-xl">
+        <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
+          <Star className="w-4 h-4 text-white" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-gray-800">{t('more.rateTitle')}</p>
+          <p className="text-xs text-gray-500">{t('more.rateDesc')}</p>
+        </div>
+        <a
+          href="https://chromewebstore.google.com/detail/notebooklm-jetpack/jgjgpfgcbdblgejodmooigkhlciejjhg/reviews"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-press px-3 py-1.5 bg-amber-500 text-white text-xs font-medium rounded-lg hover:bg-amber-600 transition-colors shadow-btn hover:shadow-btn-hover flex-shrink-0"
+        >
+          {t('more.rateBtn')}
+        </a>
+      </div>
+
+      {/* Footer — version, credit & links */}
+      <div className="flex flex-col items-center gap-1.5 pt-1">
+        <p className="text-[10px] text-gray-300 font-mono tabular-nums">
+          v{__VERSION__}+{__GIT_HASH__}
+        </p>
+        <div className="flex items-center gap-2 text-xs text-gray-400">
+          <span className="flex items-center gap-1">
+            Made with <Heart className="w-3 h-3 text-red-400" /> by {t('more.madeBy')}
+          </span>
+          <span className="text-gray-200">|</span>
           <a
             href="https://www.youtube.com/@greentrainpodcast"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 p-2.5 bg-red-50/60 border border-red-100/40 rounded-xl hover:bg-red-100/80 transition-colors group"
+            className="p-1 text-gray-400 hover:text-red-500 transition-colors rounded-md hover:bg-red-50"
+            title={t('more.ytChannel')}
           >
-            <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Youtube className="w-4 h-4 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-800 group-hover:text-red-700">{t('more.ytChannel')}</p>
-              <p className="text-xs text-gray-500">{t('more.ytDesc')}</p>
-            </div>
-            <ExternalLink className="w-3.5 h-3.5 text-gray-400 group-hover:text-red-500 flex-shrink-0" />
+            <Youtube className="w-3.5 h-3.5" />
           </a>
-
-          {/* GitHub */}
           <a
             href="https://github.com/crazynomad/notebooklm-jetpack"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 p-2.5 bg-gray-100/60 border border-gray-200/40 rounded-xl hover:bg-gray-200/80 transition-colors group"
+            className="p-1 text-gray-400 hover:text-gray-800 transition-colors rounded-md hover:bg-gray-100"
+            title="GitHub"
           >
-            <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Github className="w-4 h-4 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-800 group-hover:text-gray-900">crazynomad/notebooklm-jetpack</p>
-              <p className="text-xs text-gray-500">{t('more.ghDesc')} ⭐</p>
-            </div>
-            <ExternalLink className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600 flex-shrink-0" />
+            <Github className="w-3.5 h-3.5" />
           </a>
-
-          {/* Version & Copyright */}
-          <div className="pt-2.5 border-t border-gray-100 text-center space-y-1.5">
-            <p className="text-xs text-gray-400 font-mono tabular-nums">
-              v{__VERSION__}+{__GIT_HASH__}
-            </p>
-            <a
-              href="https://www.youtube.com/@greentrainpodcast"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-gray-400 flex items-center justify-center gap-1 hover:text-red-500 transition-colors"
-            >
-              Made with <Heart className="w-3 h-3 text-red-400 inline" /> by {t('more.madeBy')}
-            </a>
-          </div>
         </div>
       </div>
     </div>

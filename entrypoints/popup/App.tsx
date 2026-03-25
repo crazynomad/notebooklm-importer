@@ -78,10 +78,12 @@ export default function App() {
         </div>
       </div>
 
-      {/* Notebook selector — shows current connected notebook */}
-      <div className="px-3.5 pt-3" data-tour="notebook-selector">
-        <NotebookSelector />
-      </div>
+      {/* Notebook selector — only for tabs that import to NotebookLM */}
+      {activeTab !== 'podcast' && activeTab !== 'more' && (
+        <div className="px-3.5 pt-3" data-tour="notebook-selector">
+          <NotebookSelector />
+        </div>
+      )}
 
       {/* Progress indicator */}
       {importProgress && (
