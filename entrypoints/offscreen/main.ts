@@ -132,6 +132,12 @@ function htmlToMarkdown(html: string): { markdown: string; title: string } {
   }
   if (!el) el = doc.body;
 
+  // Fallback: if smart extraction yields < 200 chars, use full body
+  const smartText = el.textContent?.trim() || '';
+  if (smartText.length < 200 && el !== doc.body) {
+    el = doc.body;
+  }
+
   // Remove non-content elements
   el.querySelectorAll(REMOVE_SELECTORS).forEach(e => e.remove());
 
