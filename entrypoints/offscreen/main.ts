@@ -145,6 +145,16 @@ function htmlToMarkdown(html: string): { markdown: string; title: string } {
   // Remove non-content elements
   el.querySelectorAll(REMOVE_SELECTORS).forEach(e => e.remove());
 
+  // Flatten block elements inside table cells so GFM table rows stay single-line.
+  // Confluence (and other editors) wrap cell content in <p> tags, which Turndown
+  // treats as block elements and adds newlines around — breaking pipe table format.
+  el.querySelectorAll('td, th').forEach(cell => {
+    cell.querySelectorAll('p, div, span').forEach(inner => {
+      const text = inner.textContent || '';
+      inner.replaceWith(doc.createTextNode(text.trim()));
+    });
+  });
+
   const title = doc.querySelector('h1')?.textContent?.trim() || doc.title || '';
 
   // Convert to markdown
