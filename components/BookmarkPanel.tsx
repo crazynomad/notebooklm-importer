@@ -15,6 +15,7 @@ import {
   ChevronUp,
   X,
   Upload,
+  FileText,
 } from 'lucide-react';
 import type { ImportProgress } from '@/lib/types';
 import type { BookmarkItem } from '@/services/bookmarks';
@@ -26,6 +27,7 @@ interface Props {
 }
 
 type PanelState = 'idle' | 'loading' | 'importing' | 'exporting' | 'success' | 'error';
+type CaptureState = 'idle' | 'capturing';
 
 export function BookmarkPanel({ onProgress }: Props) {
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
@@ -33,6 +35,7 @@ export function BookmarkPanel({ onProgress }: Props) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [activeCollection, setActiveCollection] = useState<string>('all');
   const [state, setState] = useState<PanelState>('idle');
+  const [captureState, setCaptureState] = useState<CaptureState>('idle');
   const [error, setError] = useState('');
   const [currentTabInfo, setCurrentTabInfo] = useState<{ url: string; title: string; favicon?: string } | null>(null);
   const [isCurrentBookmarked, setIsCurrentBookmarked] = useState(false);
@@ -164,6 +167,21 @@ export function BookmarkPanel({ onProgress }: Props) {
     });
   };
 
+  const handleCaptureContent = () => {
+    setCaptureState('capturing');
+    setError('');
+    chrome.runtime.sendMessage({ type: 'CAPTURE_PAGE_CONTENT' }, (resp) => {
+      setCaptureState('idle');
+      if (resp?.success) {
+        setState('success');
+        setTimeout(() => setState('idle'), 2000);
+      } else {
+        setError(resp?.error || t('single.captureFailedHint'));
+        setState('error');
+      }
+    });
+  };
+
   const handleImportToNotebookLM = () => {
     const items = filteredBookmarks.filter((b) => selectedIds.has(b.id));
     if (items.length === 0) return;
@@ -261,11 +279,20 @@ export function BookmarkPanel({ onProgress }: Props) {
                 );
                 setState('importing');
               }}
-              disabled={state === 'importing'}
+              disabled={state === 'importing' || captureState === 'capturing'}
               className="btn-press flex items-center gap-1 px-3 py-1.5 bg-amber-500 text-white text-xs rounded-md hover:bg-amber-600 transition-colors shadow-btn hover:shadow-btn-hover transition-all duration-150"
             >
               {state === 'importing' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
               {t('bookmark.importNow')}
+            </button>
+            <button
+              onClick={handleCaptureContent}
+              disabled={state === 'importing' || captureState === 'capturing' || !currentTabInfo?.url?.startsWith('http')}
+              title={!currentTabInfo?.url?.startsWith('http') ? t('single.captureNotSupported') : t('single.captureAuthHint')}
+              className="btn-press flex items-center gap-1 px-3 py-1.5 bg-gray-600 text-white text-xs rounded-md hover:bg-gray-700 transition-colors shadow-btn hover:shadow-btn-hover transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {captureState === 'capturing' ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
+              {t('single.captureContent')}
             </button>
           </div>
         </div>
