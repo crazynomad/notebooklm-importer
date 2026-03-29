@@ -139,6 +139,8 @@ const REMOVE_SELECTORS = [
   '[role="toolbar"]',
   '.like-button-container',
   '.likes-section',
+  // Stiltsoft Table Filter & Charts plugin (Confluence)
+  '[id^="tfac-"]',
 ].join(',');
 
 function htmlToMarkdown(html: string): { markdown: string; title: string } {
