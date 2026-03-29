@@ -167,6 +167,7 @@ try {
 // Context menu IDs
 const MENU_ID_PAGE = 'import-page';
 const MENU_ID_LINK = 'import-link';
+const MENU_ID_CAPTURE = 'capture-page-content';
 
 export default defineBackground(() => {
   console.log('NotebookLM Jetpack background service started');
@@ -191,12 +192,38 @@ export default defineBackground(() => {
       title: '导入此链接到 NotebookLM',
       contexts: ['link'],
     });
+
+    // Menu item for capturing page content (for authenticated pages)
+    chrome.contextMenus.create({
+      id: MENU_ID_CAPTURE,
+      title: '导入此页面内容到 NotebookLM（适用于需登录页面）',
+      contexts: ['page'],
+    });
   });
 
   // Handle context menu clicks
   chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-    let url: string | undefined;
+    if (info.menuItemId === MENU_ID_CAPTURE) {
+      if (!tab?.id || !tab.url?.startsWith('http')) {
+        console.warn('Context menu capture: invalid tab');
+        return;
+      }
+      try {
+        const results = await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          func: () => ({ html: document.body.innerHTML, title: document.title }),
+        });
+        if (!results?.[0]?.result) throw new Error('Could not capture page content');
+        const { html, title: tabTitle } = results[0].result;
+        const { markdown, title } = await convertHtmlToMarkdown(html);
+        await importText(markdown, tabTitle || title);
+      } catch (error) {
+        console.error('Context menu capture failed:', error);
+      }
+      return;
+    }
 
+    let url: string | undefined;
     if (info.menuItemId === MENU_ID_PAGE) {
       url = tab?.url;
     } else if (info.menuItemId === MENU_ID_LINK) {
