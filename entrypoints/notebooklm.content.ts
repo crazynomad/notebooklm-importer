@@ -504,16 +504,21 @@ async function importTextToNotebookLM(text: string, title?: string): Promise<boo
     }
     insertButton.click();
 
-    // Wait for dialog to close / import to complete
+    // Wait for the Add Source dialog to close / import to complete.
+    // Check specifically for the Add Source dialog (not a source viewer the user may have open).
     for (let i = 0; i < 10; i++) {
       await delay(1000);
-      if (!getMainDialog()) break;
+      const dialog = getMainDialog();
+      if (!dialog || !isAddSourceDialog(dialog)) break;
     }
 
     // Smart rename: wait for NotebookLM to process, then check if it auto-renamed.
     // If the source still has a default name, rename it manually. (Fixes #38)
     if (title) {
       await delay(3000);
+      // Close any open source viewer panel so the source list is accessible for rename
+      dismissAnyDialog();
+      await delay(300);
       const defaultNames = ['粘贴的文字', '复制的文字', 'Copied text', 'Pasted text', 'Pasted Text'];
       const allSources = document.querySelectorAll('.single-source-container');
       if (allSources.length > 0) {
