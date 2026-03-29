@@ -37,6 +37,7 @@ export function ImportPanel({ onProgress }: Props) {
   const [selectedArticles, setSelectedArticles] = useState<Set<string>>(new Set());
   const [currentTabUrl, setCurrentTabUrl] = useState<string | null>(null);
   const [state, setState] = useState<ImportState>('idle');
+  const [captureState, setCaptureState] = useState<'idle' | 'capturing'>('idle');
   const [error, setError] = useState('');
   const [importResults, setImportResults] = useState<ImportItem[] | null>(null);
   const [showDetails, setShowDetails] = useState(false);
@@ -89,6 +90,22 @@ export function ImportPanel({ onProgress }: Props) {
       } else {
         setState('error');
         setError(response?.error || t('single.importFailedHint'));
+      }
+    });
+  };
+
+  // ── Page Content Capture ──
+  const handleCaptureContent = () => {
+    setCaptureState('capturing');
+    setError('');
+    chrome.runtime.sendMessage({ type: 'CAPTURE_PAGE_CONTENT' }, (response) => {
+      setCaptureState('idle');
+      if (response?.success) {
+        setState('success');
+        setTimeout(() => setState('idle'), 3000);
+      } else {
+        setState('error');
+        setError(response?.error || t('single.captureFailedHint'));
       }
     });
   };
@@ -232,11 +249,20 @@ export function ImportPanel({ onProgress }: Props) {
                 <span className="flex-1 text-sm text-gray-700 truncate">{currentTabUrl}</span>
                 <button
                   onClick={() => { setUrl(currentTabUrl); handleSingleImport(currentTabUrl); }}
-                  disabled={state === 'importing'}
+                  disabled={state === 'importing' || captureState === 'capturing'}
                   className="px-3 py-1.5 bg-notebooklm-blue text-white text-xs rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                 >
                   {state === 'importing' ? <Loader2 className="w-3 h-3 animate-spin" /> : <ExternalLink className="w-3 h-3" />}
                   {t('import')}
+                </button>
+                <button
+                  onClick={handleCaptureContent}
+                  disabled={state === 'importing' || captureState === 'capturing' || !currentTabUrl?.startsWith('http')}
+                  title={!currentTabUrl?.startsWith('http') ? t('single.captureNotSupported') : t('single.captureAuthHint')}
+                  className="px-3 py-1.5 bg-gray-600 text-white text-xs rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                >
+                  {captureState === 'capturing' ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
+                  {t('single.captureContent')}
                 </button>
               </div>
             </div>
