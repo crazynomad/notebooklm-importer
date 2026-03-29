@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, Loader2, CheckCircle, AlertCircle, ExternalLink, FileText } from 'lucide-react';
 import type { ImportProgress } from '@/lib/types';
 import { isValidUrl } from '@/lib/utils';
@@ -17,13 +17,13 @@ export function SingleImport({ onProgress }: Props) {
   const [error, setError] = useState('');
 
   // Load current tab URL on mount
-  useState(() => {
+  useEffect(() => {
     chrome.runtime.sendMessage({ type: 'GET_CURRENT_TAB' }, (response) => {
       if (response?.success && response.data) {
         setCurrentTabUrl(response.data as string);
       }
     });
-  });
+  }, []);
 
   const handleImport = async (targetUrl: string) => {
     if (!isValidUrl(targetUrl)) {
