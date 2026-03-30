@@ -932,8 +932,11 @@ async function handleMessage(message: MessageType, senderTabId?: number): Promis
       }
 
       const { markdown, title } = await convertHtmlToMarkdown(extracted.html);
+      // Use h1-derived title for the header link (clean), document.title for the source name
       const pageTitle = extracted.title || title;
-      const contentWithHeader = `# [${pageTitle}](${tabUrl})\n\n${markdown}`;
+      const headerTitle = title || extracted.title;
+      const contentWithHeader = `# [${headerTitle}](${tabUrl})\n\n${markdown}`;
+      console.log('[CAPTURE] header:', contentWithHeader.slice(0, 120));
       const success = await importText(contentWithHeader, pageTitle, senderTabId);
       if (!success) throw new Error('Import failed. Make sure NotebookLM is open.');
       return true;
