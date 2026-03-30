@@ -497,13 +497,10 @@ async function importTextToNotebookLM(text: string, title?: string): Promise<boo
     if (!insertButton) {
       throw new Error('Insert button not found');
     }
-    // Snapshot existing source titles before inserting, so we can identify the new source
-    // reliably regardless of list ordering (NotebookLM may reorder after a source is viewed).
     const defaultNames = ['粘贴的文字', '复制的文字', 'Copied text', 'Pasted text', 'Pasted Text'];
-    const titlesBeforeInsert = new Set(
-      Array.from(document.querySelectorAll('.single-source-container'))
-        .map(el => (el.querySelector('.source-title') ?? el.querySelector('.source-title-column'))?.textContent?.trim() ?? '')
-    );
+
+    // Snapshot source count before inserting so we can detect when the new source appears.
+    const countBefore = document.querySelectorAll('.single-source-container').length;
 
     // Wait for button to be enabled (disabled while processing input)
     for (let i = 0; i < 10; i++) {
@@ -512,40 +509,32 @@ async function importTextToNotebookLM(text: string, title?: string): Promise<boo
     }
     insertButton.click();
 
-    // Wait for the Add Source dialog to close / import to complete.
-    // Check specifically for the Add Source dialog (not a source viewer the user may have open).
+    // Wait for the Add Source dialog to close.
     for (let i = 0; i < 10; i++) {
       await delay(1000);
       const dialog = getMainDialog();
       if (!dialog || !isAddSourceDialog(dialog)) break;
     }
 
-    // Smart rename: wait for NotebookLM to process, then check if it auto-renamed.
-    // If the source still has a default name, rename it manually. (Fixes #38)
+    // Smart rename: wait for the new source to actually appear in the list,
+    // then rename if it still has a default name. (Fixes #38)
     if (title) {
-      await delay(3000);
-      // Close any open source viewer panel so the source list is accessible for rename
-      dismissAnyDialog();
-      await delay(300);
+      // Wait for source count to increase (reliable signal that import completed)
+      for (let i = 0; i < 10; i++) {
+        await delay(1000);
+        if (document.querySelectorAll('.single-source-container').length > countBefore) break;
+      }
+      // Extra wait for NotebookLM to finish processing (auto-rename may happen)
+      await delay(2000);
+
       const allSources = document.querySelectorAll('.single-source-container');
-      // Find the newly added source: prefer one with a default name that wasn't in the
-      // pre-insert snapshot. This handles list reordering after a source has been viewed.
+      // Scan all sources for one with a default name (new source may be at any position)
       let sourceTitle: string | undefined;
       for (let i = allSources.length - 1; i >= 0; i--) {
         const t = (allSources[i].querySelector('.source-title') ?? allSources[i].querySelector('.source-title-column'))?.textContent?.trim();
-        if (t && defaultNames.includes(t) && !titlesBeforeInsert.has(t)) {
+        if (t && defaultNames.includes(t)) {
           sourceTitle = t;
           break;
-        }
-      }
-      // Fallback: any source with a default name (covers case where previous rename also failed)
-      if (!sourceTitle) {
-        for (let i = allSources.length - 1; i >= 0; i--) {
-          const t = (allSources[i].querySelector('.source-title') ?? allSources[i].querySelector('.source-title-column'))?.textContent?.trim();
-          if (t && defaultNames.includes(t)) {
-            sourceTitle = t;
-            break;
-          }
         }
       }
       if (sourceTitle) {
