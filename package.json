@@ -1,6 +1,6 @@
 {
   "name": "notebooklm-jetpack",
-  "version": "1.7.3",
+  "version": "1.7.4",
   "description": "NotebookLM content importer Chrome Extension - Import web pages, doc sites, podcasts, AI chats, and RSS feeds",
   "private": true,
   "type": "module",
