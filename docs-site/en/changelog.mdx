@@ -3,6 +3,12 @@ title: 'Changelog'
 description: 'NotebookLM Jetpack version history'
 ---
 
+## v1.7.4 — 2026-04-09
+
+- 🐛 **Fix broken auto-rename for pasted sources**: NotebookLM recently started sorting the source list alphabetically, which broke our old assumption that "new source == last in DOM order". `Pasted Text` defaults were never being renamed to the real title. Switched to a WeakSet diff to locate the new source, robust to any sort order.
+- 🏷️ **Emoji prefixes for rescue / repair**: Rescued sources now display as `🛟 Article Title`; WeChat/X fake-success sources that were repaired display as `🔧 Article Title` — so you can tell at a glance which sources have been processed.
+- ⚙️ **New "Auto-rename default-named sources" toggle**: Popup → More panel → Settings card. Turns the entire auto-rename behavior on/off dynamically.
+
 ## v1.7.0 — 2026-03-24
 
 - ▶️ **YouTube Import**: Import individual videos, playlists, and channel videos into NotebookLM

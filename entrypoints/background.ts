@@ -511,7 +511,7 @@ async function rescueSources(urls: string[], targetTabId?: number): Promise<Resc
 
   // Handle tab-based URLs via the same repair/extract pipeline
   if (tabUrls.length > 0) {
-    const tabResults = await repairDynamicSources(tabUrls, false, targetTabId);
+    const tabResults = await repairDynamicSources(tabUrls, false, targetTabId, RESCUE_PREFIX);
     results.push(...tabResults);
   }
 
@@ -562,7 +562,7 @@ async function rescueSources(urls: string[], targetTabId?: number): Promise<Resc
       const content = `# ${title}\n\nSource: ${url}\n\n${markdown}`;
 
       // Import as text to NotebookLM
-      const success = await importText(content, title, targetTabId);
+      const success = await importText(content, title, targetTabId, RESCUE_PREFIX);
       results.push({
         url,
         status: success ? 'success' : 'error',
@@ -590,15 +590,23 @@ async function rescueSources(urls: string[], targetTabId?: number): Promise<Resc
 // Open page in browser tab → extract rendered content → import as text
 // Tab-based content extraction for dynamic/SPA sites (X.com, WeChat, etc.)
 // extractOnly=true returns content without importing to NotebookLM (for PDF export)
-async function repairDynamicSources(urls: string[], extractOnly = false, targetTabId?: number): Promise<RescueResult[]> {
-  return _tabBasedExtract(urls, extractOnly, targetTabId);
+async function repairDynamicSources(
+  urls: string[],
+  extractOnly = false,
+  targetTabId?: number,
+  renamePrefix?: string,
+): Promise<RescueResult[]> {
+  return _tabBasedExtract(urls, extractOnly, targetTabId, renamePrefix);
 }
 
 async function repairWechatSources(urls: string[], targetTabId?: number): Promise<RescueResult[]> {
-  return _tabBasedExtract(urls, false, targetTabId);
+  return _tabBasedExtract(urls, false, targetTabId, REPAIR_PREFIX);
 }
 
 type ProgressCallback = (data: Record<string, unknown>) => void;
+
+const RESCUE_PREFIX = '🛟 ';
+const REPAIR_PREFIX = '🔧 ';
 
 async function rescueSourcesWithProgress(
   urls: string[],
@@ -611,7 +619,7 @@ async function rescueSourcesWithProgress(
   const fetchUrls = urls.filter(u => !needsTabBasedExtraction(u));
 
   if (tabUrls.length > 0) {
-    const tabResults = await _tabBasedExtractWithProgress(tabUrls, false, targetTabId, sendProgress);
+    const tabResults = await _tabBasedExtractWithProgress(tabUrls, false, targetTabId, sendProgress, RESCUE_PREFIX);
     results.push(...tabResults);
   }
 
@@ -647,7 +655,7 @@ async function rescueSourcesWithProgress(
         continue;
       }
       const content = `# ${title}\n\nSource: ${url}\n\n${markdown}`;
-      const success = await importText(content, title, targetTabId);
+      const success = await importText(content, title, targetTabId, RESCUE_PREFIX);
       const r: RescueResult = { url, status: success ? 'success' : 'error', title, error: success ? undefined : '导入 NotebookLM 失败' };
       results.push(r);
       sendProgress?.({ phase: 'item-done', url, result: r });
@@ -666,14 +674,15 @@ async function repairWechatSourcesWithProgress(
   targetTabId?: number,
   sendProgress?: ProgressCallback
 ): Promise<RescueResult[]> {
-  return _tabBasedExtractWithProgress(urls, false, targetTabId, sendProgress);
+  return _tabBasedExtractWithProgress(urls, false, targetTabId, sendProgress, REPAIR_PREFIX);
 }
 
 async function _tabBasedExtractWithProgress(
   urls: string[],
   extractOnly = false,
   targetTabId?: number,
-  sendProgress?: ProgressCallback
+  sendProgress?: ProgressCallback,
+  renamePrefix?: string,
 ): Promise<RescueResult[]> {
   const results: RescueResult[] = [];
 
@@ -731,7 +740,7 @@ async function _tabBasedExtractWithProgress(
         results.push(r);
         sendProgress?.({ phase: 'item-done', url, result: r });
       } else {
-        const success = await importText(content, title, targetTabId);
+        const success = await importText(content, title, targetTabId, renamePrefix);
         const r: RescueResult = { url, status: success ? 'success' : 'error', title, content: rawContent, error: success ? undefined : '导入 NotebookLM 失败' };
         results.push(r);
         sendProgress?.({ phase: 'item-done', url, result: r });
@@ -803,7 +812,12 @@ function _tabExtractorFunction(): { success: boolean; title?: string; content?: 
   return { success: true, title, content: content.trim() };
 }
 
-async function _tabBasedExtract(urls: string[], extractOnly = false, targetTabId?: number): Promise<RescueResult[]> {
+async function _tabBasedExtract(
+  urls: string[],
+  extractOnly = false,
+  targetTabId?: number,
+  renamePrefix?: string,
+): Promise<RescueResult[]> {
   const results: RescueResult[] = [];
 
   for (const url of urls) {
@@ -889,7 +903,7 @@ async function _tabBasedExtract(urls: string[], extractOnly = false, targetTabId
         results.push({ url, status: 'success', title, content: rawContent });
       } else {
         // Import as text
-        const success = await importText(content, title, targetTabId);
+        const success = await importText(content, title, targetTabId, renamePrefix);
         results.push({
           url,
           status: success ? 'success' : 'error',

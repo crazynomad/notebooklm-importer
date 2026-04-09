@@ -3,6 +3,12 @@ title: '更新日志'
 description: 'NotebookLM Jetpack 版本更新记录'
 ---
 
+## v1.7.4 — 2026-04-09
+
+- 🐛 **修复文本导入源的自动重命名失效**：NotebookLM 最近开始按字母顺序排序源列表，我们原有的「取列表最后一个源 = 新加的源」假设失效，导致 `Pasted Text` 默认名永远不会被改回真实标题。改用 WeakSet diff 定位新源，对排序鲁棒
+- 🏷️ **Rescue / Repair 源加 emoji 前缀**：抢救后的源显示为 `🛟 文章标题`，修复 WeChat/X 等假成功源后显示为 `🔧 文章标题`，一眼区分是否被处理过
+- ⚙️ **新增「自动重命名默认名来源」开关**：Popup → More 面板 → Settings 卡片，可动态关闭/开启整个自动重命名行为
+
 ## v1.7.3 — 2026-04-08
 
 - 🐛 **修复 YouTube 频道只能抓 15 条**：之前 InnerTube 请求被 YouTube 边缘以 403 拦截，静默回退到 RSS（硬限 15 条）。现在通过 youtube.com 标签页隧道执行请求，绕开 origin 限制

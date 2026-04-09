@@ -1,6 +1,8 @@
 // Content script for NotebookLM page automation
 // Updated: 2026-02-22 — adapted to new NotebookLM UI
 
+import { getSettings } from '@/lib/settings';
+
 export default defineContentScript({
   matches: ['https://notebooklm.google.com/*'],
   runAt: 'document_idle',
@@ -31,7 +33,7 @@ export default defineContentScript({
       }
 
       if (message.type === 'IMPORT_TEXT') {
-        importTextToNotebookLM(message.text, message.title)
+        importTextToNotebookLM(message.text, message.title, message.renamePrefix)
           .then((success) => sendResponse({ success }))
           .catch((error) => {
             console.error('Import text error:', error);
@@ -427,7 +429,33 @@ async function importUrlToNotebookLM(url: string): Promise<boolean> {
 
 // ─── Text Import ────────────────────────────────────────────
 
-async function importTextToNotebookLM(text: string, title?: string): Promise<boolean> {
+/** Default placeholder names NotebookLM applies when it can't derive a title. */
+const PASTED_DEFAULT_NAMES = [
+  '粘贴的文字',
+  '复制的文字',
+  'Copied text',
+  'Copied Text',
+  'Pasted text',
+  'Pasted Text',
+];
+
+async function importTextToNotebookLM(
+  text: string,
+  title?: string,
+  renamePrefix?: string,
+): Promise<boolean> {
+  // Snapshot existing source containers BEFORE insert so we can identify the
+  // newly-added one by reference afterwards. NotebookLM now sorts the source
+  // list alphabetically, so "new source == last in DOM order" no longer holds.
+  const settings = await getSettings();
+  const shouldAutoRename = !!title && settings.autoRenamePastedSources;
+  const preExistingSources = new WeakSet<Element>();
+  if (shouldAutoRename) {
+    document.querySelectorAll('.single-source-container').forEach((el) => {
+      preExistingSources.add(el);
+    });
+  }
+
   try {
     // Step 1: Open the add source dialog
     await openAddSourceDialog();
@@ -510,25 +538,28 @@ async function importTextToNotebookLM(text: string, title?: string): Promise<boo
       if (!getMainDialog()) break;
     }
 
-    // Smart rename: wait for NotebookLM to process, then check if it auto-renamed.
-    // If the source still has a default name, rename it manually. (Fixes #38)
-    if (title) {
+    // Smart rename: find the newly-added source (via WeakSet diff, robust to
+    // NotebookLM's alphabetical sorting) and rename it if NotebookLM left it
+    // with a default placeholder name. Gated by the user setting. (Fixes #38)
+    if (shouldAutoRename) {
       await delay(3000);
-      const defaultNames = ['粘贴的文字', '复制的文字', 'Copied text', 'Pasted text', 'Pasted Text'];
-      const allSources = document.querySelectorAll('.single-source-container');
-      if (allSources.length > 0) {
-        const lastSource = allSources[allSources.length - 1];
-        const sourceTitle = lastSource.querySelector('.source-title')?.textContent?.trim();
-        if (sourceTitle && defaultNames.includes(sourceTitle)) {
-          console.log(`[importText] Source still has default name "${sourceTitle}", renaming to "${title}"`);
+      const currentSources = [...document.querySelectorAll('.single-source-container')];
+      const newSource = currentSources.find((el) => !preExistingSources.has(el));
+      if (newSource) {
+        const sourceTitle = newSource.querySelector('.source-title')?.textContent?.trim();
+        if (sourceTitle && PASTED_DEFAULT_NAMES.includes(sourceTitle)) {
+          const renameTarget = `${renamePrefix || ''}${title}`;
+          console.log(`[importText] Source still has default name "${sourceTitle}", renaming to "${renameTarget}"`);
           try {
-            await renameSource(sourceTitle, title);
+            await renameSource(sourceTitle, renameTarget);
           } catch (e) {
             console.warn('[importText] Rename failed (non-fatal):', e);
             // Ensure any leftover dialog is dismissed
             dismissAnyDialog();
           }
         }
+      } else {
+        console.log('[importText] Could not locate newly-added source (possibly deduped or still rendering)');
       }
     }
 

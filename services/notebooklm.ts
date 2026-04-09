@@ -21,12 +21,13 @@ async function sendImportMessage(tabId: number, url: string): Promise<boolean> {
 async function sendImportTextMessage(
   tabId: number,
   text: string,
-  title?: string
+  title?: string,
+  renamePrefix?: string,
 ): Promise<boolean> {
   return new Promise((resolve) => {
     chrome.tabs.sendMessage(
       tabId,
-      { type: 'IMPORT_TEXT', text, title },
+      { type: 'IMPORT_TEXT', text, title, renamePrefix },
       (response) => {
         if (chrome.runtime.lastError) {
           console.error('Content script error:', chrome.runtime.lastError);
@@ -186,14 +187,19 @@ export async function importBatch(
 }
 
 // Import text content to NotebookLM
-export async function importText(text: string, title?: string, targetTabId?: number): Promise<boolean> {
+export async function importText(
+  text: string,
+  title?: string,
+  targetTabId?: number,
+  renamePrefix?: string,
+): Promise<boolean> {
   try {
     const tab = await getNotebookLMTab(targetTabId);
     if (!tab.id) throw new Error('Failed to get NotebookLM tab');
 
     await ensureContentScript(tab.id);
 
-    const success = await sendImportTextMessage(tab.id, text, title);
+    const success = await sendImportTextMessage(tab.id, text, title, renamePrefix);
 
     // Record to history
     const historyTitle = title || 'Imported text';

@@ -262,6 +262,9 @@ const zh = {
   'more.rateTitle': '喜欢 Jetpack？',
   'more.rateDesc': '在 Chrome 商店留下评价，帮助更多人发现我们',
   'more.rateBtn': '去评价',
+  'more.settings': '设置',
+  'more.autoRenameTitle': '自动重命名默认名来源',
+  'more.autoRenameDesc': '文本导入后，若 NotebookLM 给出 "Pasted Text" 等默认名，自动改成真实标题',
 
   // ── RssImport ──
   'rss.feedUrl': 'RSS 订阅地址',
@@ -542,6 +545,9 @@ const en: Record<keyof typeof zh, string> = {
   'more.rateTitle': 'Enjoying Jetpack?',
   'more.rateDesc': 'Leave a review on Chrome Web Store to help others find us',
   'more.rateBtn': 'Rate',
+  'more.settings': 'Settings',
+  'more.autoRenameTitle': 'Auto-rename default-named sources',
+  'more.autoRenameDesc': 'When NotebookLM leaves a pasted source as "Pasted Text", automatically rename it to the real title',
 
   // ── RssImport ──
   'rss.feedUrl': 'RSS Feed URL',
