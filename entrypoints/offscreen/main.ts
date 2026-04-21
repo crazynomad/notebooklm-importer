@@ -121,6 +121,34 @@ const REMOVE_SELECTORS = [
   '.header-anchor-widget',
 ].join(',');
 
+// Lighter Turndown setup for AI conversation snippets.
+// Skips devsite/substack noise rules (irrelevant) and skips CONTENT_SELECTORS
+// extraction (caller already passes a focused fragment, not a full page).
+function createConversationTurndown(): TurndownService {
+  const td = new TurndownService({
+    headingStyle: 'atx',
+    codeBlockStyle: 'fenced',
+    bulletListMarker: '-',
+    emDelimiter: '*',
+  });
+  td.addRule('removeStyle', { filter: 'style', replacement: () => '' });
+  return td;
+}
+
+let conversationTd: TurndownService | null = null;
+
+function htmlFragmentToMarkdown(html: string): string {
+  if (!html?.trim()) return '';
+  // Plain-text fast path: user messages flow in via textContent (no tags).
+  // Skipping Turndown avoids mis-parsing stray `<` / `&` characters as HTML.
+  if (!/<[a-z!/]/i.test(html)) return html.trim();
+  if (!conversationTd) conversationTd = createConversationTurndown();
+  return conversationTd
+    .turndown(html)
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 function htmlToMarkdown(html: string): { markdown: string; title: string } {
   const doc = new DOMParser().parseFromString(html, 'text/html');
 
@@ -262,6 +290,18 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       sendResponse({ success: true, ...result });
     } catch (err) {
       console.error('[offscreen] htmlToMarkdown error:', err);
+      sendResponse({ success: false, error: String(err) });
+    }
+    return true;
+  }
+
+  if (msg.type === 'CONVERT_HTML_BATCH') {
+    try {
+      const htmls = (msg.htmls as string[]) || [];
+      const markdowns = htmls.map(htmlFragmentToMarkdown);
+      sendResponse({ success: true, markdowns });
+    } catch (err) {
+      console.error('[offscreen] CONVERT_HTML_BATCH error:', err);
       sendResponse({ success: false, error: String(err) });
     }
     return true;

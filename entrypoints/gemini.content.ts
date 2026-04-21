@@ -166,6 +166,7 @@ function extractMessages(): ClaudeMessage[] {
   return messages;
 }
 
+// Returns cleaned innerHTML so background can Turndown it into faithful Markdown.
 function cleanText(element: Element): string {
   const clone = element.cloneNode(true) as Element;
 
@@ -173,14 +174,5 @@ function cleanText(element: Element): string {
     .querySelectorAll('button, [role="button"], svg, [class*="sr-only"], .chip-container, .action-buttons, [class*="thought"], [class*="thinking-header"]')
     .forEach((el) => el.remove());
 
-  const blocks: string[] = [];
-  const walker = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT);
-
-  let node: Node | null;
-  while ((node = walker.nextNode())) {
-    const text = node.textContent?.trim();
-    if (text) blocks.push(text);
-  }
-
-  return blocks.join(' ').trim();
+  return (clone.innerHTML || '').trim();
 }

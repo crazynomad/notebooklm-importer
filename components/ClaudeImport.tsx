@@ -33,6 +33,24 @@ function detectPlatform(url: string) {
   }
 }
 
+// Lightweight markdown stripper for popup previews — pair.answer is now full
+// Markdown, so symbols like **, ##, > would otherwise leak into the preview.
+function stripMarkdown(md: string): string {
+  return md
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^>\s?/gm, '')
+    .replace(/^[-*+]\s+/gm, '')
+    .replace(/^\d+\.\s+/gm, '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export function ClaudeImport({ onProgress }: Props) {
   const [state, setState] = useState<ImportState>('idle');
   const [error, setError] = useState('');
@@ -305,7 +323,7 @@ export function ClaudeImport({ onProgress }: Props) {
                 </p>
                 <p className="text-xs text-gray-500 line-clamp-2">
                   <span className="text-gray-400">A：</span>
-                  {pair.answer.slice(0, 100) || t('claude.noAnswer')}
+                  {stripMarkdown(pair.answer).slice(0, 100) || t('claude.noAnswer')}
                   {pair.answer.length > 100 && '...'}
                 </p>
             </div>

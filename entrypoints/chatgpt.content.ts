@@ -123,22 +123,14 @@ function extractMessages(): ClaudeMessage[] {
   return messages;
 }
 
+// Returns cleaned innerHTML so background can Turndown it into faithful Markdown
+// (paragraphs, lists, code blocks, bold/italic preserved).
 function cleanText(element: Element): string {
   const clone = element.cloneNode(true) as Element;
 
-  // Remove buttons, icons, action bars
   clone
     .querySelectorAll('button, [role="button"], svg, [class*="sr-only"], [class*="agent-turn-action"]')
     .forEach((el) => el.remove());
 
-  const blocks: string[] = [];
-  const walker = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT);
-
-  let node: Node | null;
-  while ((node = walker.nextNode())) {
-    const text = node.textContent?.trim();
-    if (text) blocks.push(text);
-  }
-
-  return blocks.join(' ').trim();
+  return (clone.innerHTML || '').trim();
 }

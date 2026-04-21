@@ -256,23 +256,15 @@ function extractMessagesFallback(): ClaudeMessage[] {
   return messages;
 }
 
+// Returns cleaned innerHTML for the message — preserves block structure
+// (paragraphs, lists, blockquotes, code blocks, bold/italic) so the background
+// can run it through Turndown for faithful Markdown.
 function cleanText(element: Element): string {
   const clone = element.cloneNode(true) as Element;
 
-  // Remove action buttons, icons, etc.
   clone
     .querySelectorAll('button, [role="button"], svg, [class*="sr-only"]')
     .forEach((el) => el.remove());
 
-  // Get text preserving paragraph breaks
-  const blocks: string[] = [];
-  const walker = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT);
-
-  let node: Node | null;
-  while ((node = walker.nextNode())) {
-    const text = node.textContent?.trim();
-    if (text) blocks.push(text);
-  }
-
-  return blocks.join(' ').trim();
+  return (clone.innerHTML || '').trim();
 }

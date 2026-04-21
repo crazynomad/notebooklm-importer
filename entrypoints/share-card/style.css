@@ -266,6 +266,10 @@ body {
   color: var(--text-cn);
 }
 
+.question-text > *:first-child { margin-top: 0; }
+.question-text > *:last-child { margin-bottom: 0; }
+.question-text p { margin: 0.4em 0; }
+
 /* Answer block */
 .answer-block {
   padding-left: 14px;
@@ -287,6 +291,72 @@ body {
   font-weight: 400;
   line-height: 2.0;
   color: var(--text-en);
+}
+
+/* Answer markdown structure — keep block rhythm intentional, not browser default */
+.answer-text > *:first-child { margin-top: 0; }
+.answer-text > *:last-child { margin-bottom: 0; }
+
+.answer-text p {
+  margin: 0 0 0.85em;
+}
+
+.answer-text strong {
+  font-weight: 600;
+  color: var(--text-cn);
+}
+
+.answer-text em {
+  font-style: italic;
+  color: var(--text-cn);
+}
+
+.answer-text h2,
+.answer-text h3,
+.answer-text h4 {
+  font-family: 'Noto Serif SC', serif;
+  color: var(--text-cn);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+  margin: 1.1em 0 0.45em;
+}
+
+.answer-text h2 { font-size: 17px; }
+.answer-text h3 { font-size: 15.5px; }
+.answer-text h4 { font-size: 14.5px; }
+
+.answer-text ul,
+.answer-text ol {
+  margin: 0.4em 0 0.85em;
+  padding-left: 1.4em;
+}
+
+.answer-text li {
+  margin: 0.15em 0;
+}
+
+.answer-text li > p {
+  margin: 0;
+}
+
+.answer-text blockquote {
+  margin: 0.6em 0 0.9em;
+  padding: 0.1em 0 0.1em 12px;
+  border-left: 2px solid var(--accent-light);
+  color: var(--text-cn);
+  font-style: italic;
+  background: transparent;
+}
+
+.answer-text blockquote p {
+  margin: 0.25em 0;
+}
+
+.answer-text hr {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: 1em 0;
 }
 
 /* Code blocks */

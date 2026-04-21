@@ -2,7 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { toCanvas } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 import { QRCodeSVG } from 'qrcode.react';
+import { marked } from 'marked';
 import type { QAPair } from '@/lib/types';
+
+marked.setOptions({ gfm: true, breaks: false });
 
 const QR_URL = 'https://youtu.be/9gPTuJZRHJk';
 
@@ -212,13 +215,13 @@ export function ShareCardApp() {
                   {pair.question && (
                     <div className="question-block">
                       <div className="role-label">{i18n.question()}</div>
-                      <p className="question-text">{pair.question}</p>
+                      <div className="question-text">{renderMarkdown(pair.question)}</div>
                     </div>
                   )}
                   {pair.answer && (
                     <div className="answer-block">
                       <div className="answer-label">{i18n.answer()}</div>
-                      <div className="answer-text">{renderAnswer(pair.answer)}</div>
+                      <div className="answer-text">{renderMarkdown(pair.answer)}</div>
                     </div>
                   )}
                 </div>
@@ -258,46 +261,95 @@ function downloadDataUrl(dataUrl: string, filename: string) {
   link.click();
 }
 
-/** Clean markdown formatting for inline text segments */
-function cleanInlineMarkdown(text: string): string {
-  return text
-    .replace(/\*\*([^*]+)\*\*/g, '$1')
-    .replace(/\*([^*]+)\*/g, '$1')
-    .replace(/^#{1,6}\s+/gm, '')
-    .replace(/^\s*[-*+]\s+/gm, '• ')
-    .replace(/^\s*\d+\.\s+/gm, '')
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    .replace(/\n{3,}/g, '\n\n');
+/**
+ * Render markdown via marked's token AST, mapped to React nodes.
+ * Walking the AST (instead of marked's HTML output + dangerouslySetInnerHTML)
+ * eliminates the XSS surface from any raw HTML that survives Turndown
+ * (e.g. <iframe>, <script>) — unknown tokens just get stringified as text.
+ */
+function renderMarkdown(md: string): React.ReactNode {
+  if (!md?.trim()) return null;
+  const tokens = marked.lexer(md);
+  return tokens.map((tok, i) => renderBlockToken(tok, `b${i}`));
 }
 
-/** Render answer with code blocks styled, inline code highlighted */
-function renderAnswer(text: string): React.ReactNode {
-  // Split by fenced code blocks: ```lang\n...\n```
-  const parts = text.split(/(```[\s\S]*?```)/g);
+type AnyToken = { type: string; [k: string]: any };
 
-  return parts.map((part, i) => {
-    // Fenced code block
-    if (part.startsWith('```')) {
-      const match = part.match(/^```(\w*)\n?([\s\S]*?)```$/);
-      const lang = match?.[1] || '';
-      const code = match?.[2]?.replace(/\n$/, '') || part.slice(3, -3);
+function renderBlockToken(tok: AnyToken, key: string): React.ReactNode {
+  switch (tok.type) {
+    case 'paragraph':
+      return <p key={key}>{renderInlineTokens(tok.tokens)}</p>;
+    case 'heading': {
+      const level = Math.min(Math.max(tok.depth || 2, 2), 4);
+      const Tag = (`h${level}` as 'h2');
+      return <Tag key={key}>{renderInlineTokens(tok.tokens)}</Tag>;
+    }
+    case 'blockquote':
       return (
-        <div key={i} className="code-block">
-          {lang && <span className="code-lang">{lang}</span>}
-          <pre><code>{code}</code></pre>
+        <blockquote key={key}>
+          {(tok.tokens as AnyToken[]).map((t, i) => renderBlockToken(t, `${key}-${i}`))}
+        </blockquote>
+      );
+    case 'list': {
+      const items = (tok.items as AnyToken[]).map((item, i) => (
+        <li key={`${key}-${i}`}>
+          {(item.tokens as AnyToken[]).map((t, j) =>
+            t.type === 'text'
+              ? renderInlineTokens((t as any).tokens || [{ type: 'text', text: (t as any).text }])
+              : renderBlockToken(t, `${key}-${i}-${j}`)
+          )}
+        </li>
+      ));
+      return tok.ordered ? <ol key={key}>{items}</ol> : <ul key={key}>{items}</ul>;
+    }
+    case 'code':
+      return (
+        <div key={key} className="code-block">
+          {tok.lang && <span className="code-lang">{tok.lang}</span>}
+          <pre><code>{tok.text}</code></pre>
         </div>
       );
+    case 'hr':
+      return <hr key={key} />;
+    case 'space':
+      return null;
+    case 'html':
+      // Raw HTML in markdown — render as plain text to avoid XSS.
+      return <p key={key}>{tok.raw}</p>;
+    default:
+      // Fallback: surface raw text without interpretation.
+      return tok.raw ? <p key={key}>{tok.raw}</p> : null;
+  }
+}
+
+function renderInlineTokens(tokens: AnyToken[] | undefined): React.ReactNode {
+  if (!tokens) return null;
+  return tokens.map((tok, i) => {
+    const k = `i${i}`;
+    switch (tok.type) {
+      case 'text':
+        return tok.tokens
+          ? <span key={k}>{renderInlineTokens(tok.tokens)}</span>
+          : <span key={k}>{tok.text}</span>;
+      case 'strong':
+        return <strong key={k}>{renderInlineTokens(tok.tokens)}</strong>;
+      case 'em':
+        return <em key={k}>{renderInlineTokens(tok.tokens)}</em>;
+      case 'codespan':
+        return <code key={k} className="inline-code">{tok.text}</code>;
+      case 'link':
+        // Render link text only — no anchor (share image is static, href adds noise)
+        return <span key={k}>{renderInlineTokens(tok.tokens)}</span>;
+      case 'br':
+        return <br key={k} />;
+      case 'del':
+        return <s key={k}>{renderInlineTokens(tok.tokens)}</s>;
+      case 'escape':
+        return <span key={k}>{tok.text}</span>;
+      case 'html':
+        return <span key={k}>{tok.raw}</span>;
+      default:
+        return tok.raw ? <span key={k}>{tok.raw}</span> : null;
     }
-
-    // Normal text — render inline code with styling
-    const cleaned = cleanInlineMarkdown(part);
-    const inlineParts = cleaned.split(/(`[^`]+`)/g);
-
-    return inlineParts.map((seg, j) => {
-      if (seg.startsWith('`') && seg.endsWith('`')) {
-        return <code key={`${i}-${j}`} className="inline-code">{seg.slice(1, -1)}</code>;
-      }
-      return <span key={`${i}-${j}`}>{seg}</span>;
-    });
   });
 }
