@@ -3,6 +3,13 @@ title: 'Changelog'
 description: 'NotebookLM Jetpack version history'
 ---
 
+## v1.7.5 — 2026-04-23
+
+- 🎨 **Share card preserves AI conversation structure**: The previous extractor flattened paragraphs, lists, blockquotes, and bold formatting into a single run-on paragraph — multi-line answers (translations, side-by-side comparisons, definition lists) became unreadable in the share image. Claude/ChatGPT/Gemini extractors now emit cleaned HTML fragments which the offscreen Turndown batch-converts to Markdown, preserving paragraphs / headings / ordered & unordered lists / blockquotes / bold & italic / inline code / fenced code
+- 🛡️ **Share card renders via marked AST**: Walks markdown tokens into React nodes directly, avoiding raw HTML injection paths. Stray iframe/script tags that survive Turndown degrade to plain text automatically
+- ✨ **NotebookLM imports improve in step**: Conversation content imported into NotebookLM now retains the original Markdown structure, much nicer to read
+- 🔧 Popup selection preview strips Markdown symbols so `**` and `##` no longer leak into the list
+
 ## v1.7.4 — 2026-04-09
 
 - 🐛 **Fix broken auto-rename for pasted sources**: NotebookLM recently started sorting the source list alphabetically, which broke our old assumption that "new source == last in DOM order". `Pasted Text` defaults were never being renamed to the real title. Switched to a WeakSet diff to locate the new source, robust to any sort order.
